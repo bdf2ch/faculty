@@ -1,0 +1,55 @@
+<row centered>
+    <column cols="6">
+        <h2>Новый студент</h2>
+    </column>
+</row>
+<row centered>
+    <column cols="6">
+        <form method="post" action="" class="forms">
+            <section>
+                <label>
+                    Фамилия
+                    <span class="error right" ng-show="errors['surname'] !== undefined">{{ errors["surname"] }}</span>
+                </label>
+                <input type="text" name="surname" ng-model="newUer.surname"/>
+            </section>
+            <section>
+                <label>
+                    Имя
+                    <span class="error right" ng-show="errors['name'] !== undefined">{{ errors["name"] }}</span>
+                </label>
+                <input type="text" name="name" ng-model="newUser.name"/>
+            </section>
+            <section>
+                <label>
+                    Отчество
+                    <span class="error right" ng-show="errors['fname'] !== undefined">{{ errors["fname"] }}</span>
+                </label>
+                <input type="text" name="fname" ng-moel="newUser.fname"/>
+            </section>
+            <section>
+                <label>
+                    E-mail
+                    <span class="error right" ng-show="errors['email'] !== undefined">{{ errors["email"] }}</span>
+                </label>
+                <input type="email" name="email" mg-model="newUser.email"/>
+            </section>
+            <section>
+                <label>
+                    Пароль
+                    <span class="error right" ng-show="errors['password'] !== undefined">{{ errors["password"] }}</span>
+                </label>
+                <input type="password" name="password" ng-model="newUserPassword"/>
+            </section>
+            <section>
+                <label>Специальность</label>
+                <select class="select">
+                    <option value="">Choose me</option>
+                </select>
+            </section>
+            <section>
+                <button type="primary" ng-click="validate()">Добавить студента</button>
+            </section>
+        </form>
+    </column>
+</row>

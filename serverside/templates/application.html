@@ -1,14 +1,16 @@
 <!-- BEGIN: main -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="app">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="../../resources/styles/kube.min.css">
     <link rel="stylesheet" href="../../resources/styles/style.css">
     <script src="../../libs/angularjs/angular.min.js"></script>
 </head>
 <body>
     <script src="../../libs/angularjs/angular-route.min.js"></script>
+    <script src="modules/app.js"></script>
     <script type="text/javascript">
         var initData = {
             users: {USERS},
@@ -17,7 +19,12 @@
             disciplines: {DISCIPLINES}
         };
     </script>
-fgfdgfd
+
+    <div id="app-header">
+        <a href="{{ menuItem.url }}" ng-class="{ 'active': menuItem.active === true }" ng-repeat="menuItem in application.getMenu() track by $index">{{ menuItem.title }}</a>
+        <a href="" class="right">Войти</a>
+    </div>
+    <div id="app-wrapper" ng-view></div>
 </body>
 </html>
 <!-- END: main -->

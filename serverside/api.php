@@ -26,13 +26,66 @@
 
 
     function getUsers () {
+        global $link;
         $result = array();
+
         $query = mysql_query("SELECT * FROM users", $link);
-        if (!query)
+        if (!$query)
             return json_encode("error");
         else {
             while ($row = mysql_fetch_assoc($query)) {
-                array_push($row);
+                array_push($result, $row);
+            }
+            return json_encode($result);
+        }
+    }
+
+
+
+    function getNews () {
+        global $link;
+        $result = array();
+
+        $query = mysql_query("SELECT * FROM news", $link);
+        if (!$query)
+            return json_encode("error");
+        else {
+            while ($row = mysql_fetch_assoc($query)) {
+                array_push($result, $row);
+            }
+            return json_encode($result);
+        }
+    }
+
+
+
+    function getDisciplines () {
+        global $link;
+        $result = array();
+
+        $query = mysql_query("SELECT * FROM disciplines", $link);
+        if (!$query)
+            return json_encode("error");
+        else {
+            while ($row = mysql_fetch_assoc($query)) {
+                array_push($result, $row);
+            }
+            return json_encode($result);
+        }
+    }
+
+
+
+    function getResults () {
+        global $link;
+        $result = array();
+
+        $query = mysql_query("SELECT * FROM results", $link);
+        if (!$query)
+            return json_encode("error");
+        else {
+            while ($row = mysql_fetch_assoc($query)) {
+                array_push($result, $row);
             }
             return json_encode($result);
         }

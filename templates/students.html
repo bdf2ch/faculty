@@ -1,0 +1,48 @@
+<row centered>
+    <column cols="1"></column>
+    <column cols="10">
+        <h2>
+            Студенты кафедры
+            <button type="primary" small class="right" ng-click="gotoNewStudent()">Добавить студента</button>
+        </h2>
+
+    </column>
+    <column cols="1">
+    </column>
+</row>
+
+<row centered>
+    <column cols="1"></column>
+    <column cols="10">
+
+        <table class="table-stripped">
+            <thead>
+            <tr>
+                <th>Фамилия</th>
+                <th>Имя</th>
+                <th>Отчество</th>
+                <th>E-mail</th>
+                <th>Пароль</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="user in app.getUsers() track by $id">
+                <td class="width-2">{{ user.surname }}</td>
+                <td class="width-2">{{ user.name }}</td>
+                <td class="width-2">{{ user.fname }}</td>
+                <td class="width-2">{{ user.email }}</td>
+                <td>{{ user.password }}</td>
+                <td class="width-4 text-right">
+                    <button type="primary" small>Изменить</button>
+                    <button type="primary" small>Удалить</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </column>
+    <column cols="1"></column>
+</row>
+
+

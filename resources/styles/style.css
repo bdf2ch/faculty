@@ -1,4 +1,55 @@
+/**********
+** FONTS
+*********/
+@font-face {
+  font-family: "Roboto Regular";
+  src: url("../fonts/Roboto-Regular.ttf");
+}
+@font-face {
+  font-family: "Roboto Bold";
+  src: url("../fonts/Roboto-Bold.ttf");
+}
+@font-face {
+  font-family: "Roboto Italic";
+  src: url("../fonts/Roboto-Italic.ttf");
+}
 html,
 body {
   padding: 0px;
+  font-family: "Roboto Regular";
+}
+#app-header {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  height: 40px;
+  min-width: 1200px;
+  background: #1A237E;
+}
+#app-header a {
+  display: inline-block;
+  flooat: left;
+  height: 40px;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+}
+#app-header a:hover {
+  background: #303F9F;
+}
+#app-header a.active {
+  background: #1E88E5;
+}
+#app-wrapper {
+  position: absolute;
+  top: 40px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  min-width: 1200px;
+  overflow: auto;
+  padding-top: 40px;
 }
