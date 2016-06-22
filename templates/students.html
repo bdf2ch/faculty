@@ -21,21 +21,28 @@
                 <th>Фамилия</th>
                 <th>Имя</th>
                 <th>Отчество</th>
+                <th>Специальность</th>
                 <th>E-mail</th>
                 <th>Пароль</th>
                 <th></th>
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="user in app.getUsers() track by $id">
-                <td class="width-2">{{ user.surname }}</td>
-                <td class="width-2">{{ user.name }}</td>
-                <td class="width-2">{{ user.fname }}</td>
-                <td class="width-2">{{ user.email }}</td>
+            <tr ng-repeat="user in app.getUsers() | students track by $index">
+                <td class="width-1">{{ user.surname }}</td>
+                <td class="width-1">{{ user.name }}</td>
+                <td class="width-1">{{ user.fname }}</td>
+                <td class="width-4">
+                    <span ng-show=" user.specialityId !== 0">{{ app.getSpecialityById(user.specialityId).title }}</span>
+                    <span ng-show="user.specialityId === 0">не указана</span>
+                </td>
+                <td class="width-1">{{ user.email }}</td>
                 <td>{{ user.password }}</td>
                 <td class="width-4 text-right">
-                    <button type="primary" small>Изменить</button>
-                    <button type="primary" small>Удалить</button>
+                    <button type="primary" small ng-show="user.deleting === false" ng-click="edit(user.id)">Изменить</button>
+                    <button type="primary" small ng-show="user.deleting === false" ng-click="delete(user.id)">Удалить</button>
+                    <button type="primary" small ng-show="user.deleting === true" ng-click="remove(user.id)">Подтвердить</button>
+                    <button type="primary" small ng-show="user.deleting === true" ng-click="user.cancel()">Отмена</button>
                 </td>
             </tr>
             </tbody>

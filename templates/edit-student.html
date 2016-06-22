@@ -1,0 +1,57 @@
+<row centered>
+    <column cols="6">
+        <h2>Редактирование студента</h2>
+    </column>
+</row>
+<row centered>
+    <column cols="6">
+        <form method="post" action="" class="forms" ng-submit="user.validate()">
+            <section>
+                <label>
+                    Фамилия
+                    <span class="error right" ng-show="user.errors['surname'] !== undefined">{{ user.errors["surname"] }}</span>
+                </label>
+                <input type="text" name="surname" ng-model="user.surname"/>
+            </section>
+            <section>
+                <label>
+                    Имя
+                    <span class="error right" ng-show="user.errors['name'] !== undefined">{{ user.errors["name"] }}</span>
+                </label>
+                <input type="text" name="name" ng-model="user.name"/>
+            </section>
+            <section>
+                <label>
+                    Отчество
+                    <span class="error right" ng-show="user.errors['fname'] !== undefined">{{ user.errors["fname"] }}</span>
+                </label>
+                <input type="text" name="fname" ng-model="user.fname"/>
+            </section>
+            <section>
+                <label>
+                    E-mail
+                    <span class="error right" ng-show="user.errors['email'] !== undefined">{{ user.errors["email"] }}</span>
+                </label>
+                <input type="text" name="email" ng-model="user.email"/>
+            </section>
+            <section>
+                <label>
+                    Пароль
+                    <span class="error right" ng-show="user.errors['password'] !== undefined">{{ user.errors["password"] }}</span>
+                </label>
+                <input type="password" name="password" ng-model="user.password"/>
+            </section>
+            <section>
+                <label>
+                    Специальность
+                    <span class="error right" ng-show="user.errors['specialityId'] !== undefined">{{ user.errors["specialityId"] }}</span>
+                </label>
+                <select class="select" ng-model="user.specialityId" ng-options="spec.id as spec.title for spec in app.getSpecialities()"></select>
+            </section>
+            <section>
+                <button type="primary" ng-click="save()">Сохранить изменения</button>
+                <button type="primary" ng-click="gotoStudents()">Вернуться к списку студентов</button>
+            </section>
+        </form>
+    </column>
+</row>

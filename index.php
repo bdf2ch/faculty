@@ -8,6 +8,7 @@
     $template -> assign("NEWS", getNews());
     $template -> assign("DISCIPLINES", getDisciplines());
     $template -> assign("RESULTS", getResults());
+    $template -> assign("SPECIALITIES", getSpecialities());
 
     $template -> parse("main");
     $template -> out("main");

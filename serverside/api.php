@@ -9,19 +9,38 @@
     if (!mysql_select_db($db_name))
         die("Unable to select db: ".mysql_error());
 
-    if (isset($postdata["action"])) {
+    if (isset($postdata -> action)) {
         switch ($postdata -> action) {
-            case "test":
-                test($postdata -> data);
+            case "addSpeciality":
+                addSpeciality($postdata -> data);
+                break;
+            case "editSpeciality":
+                editSpeciality($postdata -> data);
+                break;
+            case "deleteSpeciality":
+                deleteSpeciality($postdata -> data);
+                break;
+            case "addStudent":
+                addStudent($postdata -> data);
+                break;
+            case "editStudent":
+                editStudent($postdata -> data);
+                break;
+            case "deleteStudent":
+                deleteStudent($postdata -> data);
+                break;
+            case "addProfessor":
+                addProfessor($postdata -> data);
+                break;
+            case "editProfessor":
+                editProfessor($postdata -> data);
+                break;
+            case "deleteProfessor":
+                deleteProfessor($postdata -> data);
                 break;
         }
     }
 
-
-
-    function test ($data) {
-
-    }
 
 
 
@@ -37,6 +56,83 @@
                 array_push($result, $row);
             }
             return json_encode($result);
+        }
+    }
+
+
+    function addStudent ($data) {
+        if ($data != null) {
+            $surname = $data -> surname;
+            $name = $data -> name;
+            $fname = $data -> fname;
+            $specialityId = $data -> specialityId;
+            $email = $data -> email;
+            $password = $data -> password;
+
+            $query = mysql_query("INSERT INTO users (surname, name, fname, speciality_id, email, password, is_professor) VALUES ('$surname', '$name', '$fname', $specialityId, '$email', '$password', 0)");
+            if (!$query) {
+                echo(json_encode("error"));
+                return false;
+            } else {
+                $id = mysql_insert_id();
+                $query2 = mysql_query("SELECT * FROM users WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                }
+            }
+        }
+    }
+
+
+    function editStudent ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+            $surname = $data -> surname;
+            $name = $data -> name;
+            $fname = $data -> fname;
+            $specialityId = $data -> specialityId;
+            $email = $data -> email;
+            $password = $data -> password;
+
+            $query = mysql_query("UPDATE users SET surname = '$surname', name = '$name', fname = '$fname', speciality_id = $specialityId, email = '$email', password = '$password' WHERE id = $id");
+            if (!$query) {
+                echo(json_encode(mysql_error()));
+                return false;
+            } else {
+                $query2 = mysql_query("SELECT * FROM users WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error query2"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                    return true;
+                }
+            }
+        }
+    }
+
+
+    function deleteStudent ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+
+            $query = mysql_query("DELETE FROM users WHERE id = $id");
+            if (!$query) {
+                echo(json_encode(mysql_error()));
+                return false;
+            } else {
+                $query2 = mysql_query("DELETE FROM results WHERE student_id = $id");
+                if (!$query2) {
+                    echo(json_encode(mysql_error()));
+                    return false;
+                } else {
+                    echo(json_encode("success"));
+                    return true;
+                }
+            }
         }
     }
 
@@ -88,6 +184,167 @@
                 array_push($result, $row);
             }
             return json_encode($result);
+        }
+    }
+
+
+
+    function getSpecialities () {
+        global $link;
+        $result = array();
+
+        $query = mysql_query("SELECT * FROM specialities", $link);
+        if (!$query) {
+            echo(json_encode("error"));
+            return false;
+        } else {
+            while ($row = mysql_fetch_assoc($query)) {
+                array_push($result, $row);
+            }
+            return json_encode($result);
+            return true;
+        }
+    }
+
+
+    function addSpeciality ($data) {
+        if ($data != null) {
+            $title = $data -> title;
+            $duration = intval($data -> duration);
+
+            $query = mysql_query("INSERT INTO specialities (title, duration) VALUES ('$title', $duration)");
+            if (!$query)
+                return json_encode("error");
+            else {
+                $id = mysql_insert_id();
+                $query2 = mysql_query("SELECT * FROM specialities WHERE id = $id");
+                 if (!$query2)
+                    return json_encode("error");
+                 else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                 }
+            }
+        }
+    }
+
+
+    function editSpeciality ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+            $title = $data -> title;
+            $duration = intval($data -> duration);
+
+            $query = mysql_query("UPDATE specialities SET title = '$title', duration = $duration WHERE id = $id");
+            if (!$query)
+                return json_encode("error");
+            else {
+                $query2 = mysql_query("SELECT * FROM specialities WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                    return true;
+                }
+            }
+        }
+    }
+
+    function deleteSpeciality ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+            $query = mysql_query("DELETE FROM specialities WHERE id = $id");
+            if (!query) {
+                echo(json_encode("error"));
+                return false;
+            } else {
+                 $query2 = mysql_query("UPDATE users SET speciality_id = 0 WHERE speciality_id = $id");
+                 if (!query) {
+                     echo(json_encode("error"));
+                     return false;
+                 } else {
+                     echo(json_encode("success"));
+                     return true;
+                 }
+            }
+        }
+    }
+
+
+
+    function addProfessor ($data) {
+        if ($data != null) {
+            $surname = $data -> surname;
+            $name = $data -> name;
+            $fname = $data -> fname;
+            $email = $data -> email;
+            $password = $data -> password;
+
+            $query = mysql_query("INSERT INTO users (surname, name, fname, speciality_id, email, password, is_professor) VALUES ('$surname', '$name', '$fname', 0, '$email', '$password', 1)");
+            if (!$query) {
+                echo(json_encode("error"));
+                return false;
+            } else {
+                $id = mysql_insert_id();
+                $query2 = mysql_query("SELECT * FROM users WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                }
+            }
+        }
+    }
+
+
+
+    function editProfessor ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+            $surname = $data -> surname;
+            $name = $data -> name;
+            $fname = $data -> fname;
+            $email = $data -> email;
+            $password = $data -> password;
+
+            $query = mysql_query("UPDATE users SET surname = '$surname', name = '$name', fname = '$fname', email = '$email', password = '$password' WHERE id = $id");
+            if (!$query) {
+                echo(json_encode(mysql_error()));
+                return false;
+            } else {
+                $query2 = mysql_query("SELECT * FROM users WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error query2"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                    return true;
+                }
+            }
+        }
+    }
+
+
+
+    function deleteProfessor ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+
+            $query = mysql_query("DELETE FROM users WHERE id = $id");
+            if (!$query) {
+                echo(json_encode(mysql_error()));
+                return false;
+            } else {
+                $query2 = mysql_query("UPDATE results SET professor_id = 0 WHERE professor_id = $id");
+                if (!$query2) {
+                    echo(json_encode(mysql_error()));
+                    return false;
+                } else {
+                    echo(json_encode("success"));
+                    return true;
+                }
+            }
         }
     }
 
