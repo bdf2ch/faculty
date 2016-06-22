@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.4.11
+-- version 4.6.0
 -- http://www.phpmyadmin.net
 --
 -- Хост: localhost
--- Время создания: Июн 21 2016 г., 23:38
--- Версия сервера: 5.6.25-log
--- Версия PHP: 5.5.24
+-- Время создания: Июн 22 2016 г., 14:55
+-- Версия сервера: 5.5.23
+-- Версия PHP: 5.5.34
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -26,7 +26,7 @@ SET time_zone = "+00:00";
 -- Структура таблицы `disciplines`
 --
 
-CREATE TABLE IF NOT EXISTS `disciplines` (
+CREATE TABLE `disciplines` (
   `id` int(11) NOT NULL,
   `title` varchar(500) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `disciplines` (
 -- Структура таблицы `news`
 --
 
-CREATE TABLE IF NOT EXISTS `news` (
+CREATE TABLE `news` (
   `id` int(11) NOT NULL,
   `title` varchar(500) CHARACTER SET utf8 NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `news` (
 -- Структура таблицы `results`
 --
 
-CREATE TABLE IF NOT EXISTS `results` (
+CREATE TABLE `results` (
   `id` int(11) NOT NULL,
   `student_id` int(11) NOT NULL,
   `professor_id` int(11) NOT NULL,
@@ -66,11 +66,23 @@ CREATE TABLE IF NOT EXISTS `results` (
 -- Структура таблицы `specialities`
 --
 
-CREATE TABLE IF NOT EXISTS `specialities` (
+CREATE TABLE `specialities` (
   `id` int(11) NOT NULL,
   `title` varchar(500) NOT NULL,
   `duration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Дамп данных таблицы `specialities`
+--
+
+INSERT INTO `specialities` (`id`, `title`, `duration`) VALUES
+(3, '09.03.01 Информатика и вычислительная техника', 4),
+(4, '09.03.02 Информационные системы и технологии (профиль: Геоинформационные системы)', 4),
+(5, '09.03.03 Прикладная информатика', 4),
+(10, '09.04.01 Информатика и вычислительная техника (Компьютерный анализ и интерпретация данных)', 2),
+(11, '09.04.03 Прикладная информатика (Прикладная информатика в аналитической деятельности)', 2),
+(12, '09.06.01 Информатика и вычислительная техника (Автоматизация и управление технологическими процессами и производствами, Математическое моделирование, численные методы и комплексы программ)', 4);
 
 -- --------------------------------------------------------
 
@@ -78,22 +90,25 @@ CREATE TABLE IF NOT EXISTS `specialities` (
 -- Структура таблицы `users`
 --
 
-CREATE TABLE IF NOT EXISTS `users` (
+CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `surname` varchar(500) NOT NULL,
   `name` varchar(500) NOT NULL,
   `fname` varchar(500) NOT NULL,
   `email` varchar(500) NOT NULL,
   `is_professor` int(11) NOT NULL DEFAULT '0',
+  `password` varchar(16) NOT NULL,
   `speciality_id` int(11) NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Дамп данных таблицы `users`
 --
 
-INSERT INTO `users` (`id`, `surname`, `name`, `fname`, `email`, `is_professor`, `speciality_id`) VALUES
-(1, 'Петянов', 'Петян', 'Петянович', 'petyan@mail.ru', 1, 0);
+INSERT INTO `users` (`id`, `surname`, `name`, `fname`, `email`, `is_professor`, `password`, `speciality_id`) VALUES
+(1, 'Васянов', 'Васян', 'Васянович', 'vasyan@mail.ru', 0, 'qwerty', 5),
+(4, 'Тестов', 'Тест', 'Тестович', 'test@mail.ru', 0, 'qwerty', 4),
+(7, 'bnbnbnb', 'opopopo', 'dsad', 'opopop', 1, 'adsada', 0);
 
 --
 -- Индексы сохранённых таблиц
@@ -152,12 +167,12 @@ ALTER TABLE `results`
 -- AUTO_INCREMENT для таблицы `specialities`
 --
 ALTER TABLE `specialities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 --
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
