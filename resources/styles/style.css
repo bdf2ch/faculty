@@ -43,6 +43,21 @@ body {
 #app-header a.active {
   background: #1E88E5;
 }
+#app-header #login {
+  position: relative;
+}
+#app-header #login:hover .login-block {
+  display: block;
+  margin-top: 6px;
+}
+#app-header #login .login-block {
+  position: absolute;
+  right: 0px;
+  display: none;
+  float: left;
+  width: 200px;
+  background: red;
+}
 #app-wrapper {
   position: absolute;
   top: 40px;
@@ -52,4 +67,41 @@ body {
   min-width: 1200px;
   overflow: auto;
   padding-top: 40px;
+  background: url("../images/bg2.png");
+}
+.news {
+  padding: 20px;
+  background: white;
+  border: 1px solid lightgray;
+}
+#media-grid {
+  -webkit-column-count: 2;
+  -moz-column-count: 2;
+  column-count: 2;
+  -webkit-column-gap: 24px;
+  -moz-column-gap: 24px;
+  column-gap: 24px;
+}
+#media-grid > div {
+  display: inline-block;
+  width: 100%;
+}
+@media (max-width: 768px) {
+  #media-grid {
+    -webkit-column-count: 1;
+    -moz-column-count: 1;
+    column-count: 1;
+  }
+}
+#media-grid > div {
+  margin: 0 auto 24px;
+  padding: 24px;
+  background: #ddd;
+  text-align: center;
+}
+#media-grid > div:nth-child(2n) {
+  height: 200px;
+}
+#media-grid > div:nth-child(5n) {
+  height: 130px;
 }

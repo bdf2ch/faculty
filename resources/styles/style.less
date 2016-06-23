@@ -1,3 +1,6 @@
+@import "mixins.less";
+@import "variables.less";
+
 /**********
 ** FONTS
 *********/
@@ -50,6 +53,29 @@ html, body {
     &.active {
       background: #1E88E5;
     }
+
+  }
+
+
+  #login {
+    position: relative;
+    &:hover {
+      .login-block {
+        display: block;
+        margin-top: 6px;
+      }
+    }
+
+    .login-block {
+      position: absolute;
+      right: 0px;
+      display: none;
+      float: left;
+      //height: 200px;
+      width: 200px;
+      background: red;
+    }
+
   }
 }
 
@@ -63,9 +89,32 @@ html, body {
   min-width: 1200px;
   overflow: auto;
   padding-top: 40px;
+  background: url("../images/bg2.png");
 }
 
 
-.error {
-  //display: block !important;
+
+.news {
+  padding: 20px;
+  background: white;
+  border: 1px solid lightgray;
+}
+
+
+#media-grid {
+
+  .media-grid(2);
+
+  & > div {
+    margin: 0 auto 24px;
+    padding: 24px;
+    background: #ddd;
+    text-align: center;
+  }
+  & > div:nth-child(2n) {
+    height: 200px;
+  }
+  & > div:nth-child(5n) {
+    height: 130px;
+  }
 }

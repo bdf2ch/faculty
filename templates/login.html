@@ -1,0 +1,31 @@
+<br><br><br>
+<row centered>
+    <column cols="4">
+        <h2>Вход на сайт</h2>
+    </column>
+</row>
+<row centered>
+    <column cols="4">
+        <div class="width-12" style="background: white; padding: 20px;">
+            <form method="post" action="" class="forms" ng-submit="send()">
+                <section>
+                    <label>
+                        E-mail
+                        <span class="error right" ng-show="errors['email'] !== undefined">{{ errors["email"] }}</span>
+                    </label>
+                    <input type="text" name="surname" ng-model="email" placeholder="Введите e-mail"/>
+                </section>
+                <section>
+                    <label>
+                        Пароль
+                        <span class="error right" ng-show="errors['password'] !== undefined">{{ errors["password"] }}</span>
+                    </label>
+                    <input type="text" name="name" ng-model="password" placeholder="Введите пароль"/>
+                </section>
+                <section>
+                    <button type="primary" class="width-12" ng-click="send()">Войти</button>
+                </section>
+            </form>
+        </div>
+    </column>
+</row>

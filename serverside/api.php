@@ -38,6 +38,24 @@
             case "deleteProfessor":
                 deleteProfessor($postdata -> data);
                 break;
+            case "addDiscipline":
+                addDiscipline($postdata -> data);
+                break;
+            case "editDiscipline":
+                editDiscipline($postdata -> data);
+                break;
+            case "deleteDiscipline":
+                deleteDiscipline($postdata -> data);
+                break;
+            case "addArticle":
+                addArticle($postdata -> data);
+                break;
+            case "editArticle":
+                editArticle($postdata -> data);
+                break;
+            case "deleteArticle":
+                deleteArticle($postdata -> data);
+                break;
         }
     }
 
@@ -113,6 +131,7 @@
             }
         }
     }
+
 
 
     function deleteStudent ($data) {
@@ -228,6 +247,7 @@
     }
 
 
+
     function editSpeciality ($data) {
         if ($data != null) {
             $id = $data -> id;
@@ -249,6 +269,8 @@
             }
         }
     }
+
+
 
     function deleteSpeciality ($data) {
         if ($data != null) {
@@ -347,5 +369,147 @@
             }
         }
     }
+
+
+
+    function addDiscipline ($data) {
+        if ($data != null) {
+            $title = $data -> title;
+
+            $query = mysql_query("INSERT INTO disciplines (title) VALUES ('$title')");
+            if (!$query) {
+                    echo(json_encode("error"));
+                    return false;
+            } else {
+                $id = mysql_insert_id();
+                $query2 = mysql_query("SELECT * FROM disciplines WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                }
+            }
+        }
+    }
+
+
+
+    function editDiscipline ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+            $title = $data -> title;
+
+            $query = mysql_query("UPDATE disciplines SET title = '$title' WHERE id = $id");
+            if (!$query) {
+                echo(json_encode(mysql_error()));
+                return false;
+            } else {
+                $query2 = mysql_query("SELECT * FROM disciplines WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error query2"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                    return true;
+                }
+            }
+        }
+    }
+
+
+
+    function deleteDiscipline ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+
+            $query = mysql_query("DELETE FROM disciplines WHERE id = $id");
+            if (!$query) {
+                echo(json_encode(mysql_error()));
+                return false;
+            } else {
+                $query2 = mysql_query("DELETE FROM results WHERE discipline_id = $id");
+                if (!$query2) {
+                    echo(json_encode(mysql_error()));
+                    return false;
+                } else {
+                    echo(json_encode("success"));
+                    return true;
+                }
+            }
+        }
+    }
+
+
+
+    function addArticle ($data) {
+        if ($data != null) {
+            $title = $data -> title;
+            $preview = $data -> preview;
+            $content = $data -> content;
+            $userId = $data -> userId;
+            $timestamp = time();
+
+            $query = mysql_query("INSERT INTO news (title, preview, content, user_id, timestamp) VALUES ('$title', '$preview', '$content', $userId, $timestamp)");
+            if (!$query) {
+                echo(json_encode("error"));
+                return false;
+            } else {
+                $id = mysql_insert_id();
+                $query2 = mysql_query("SELECT * FROM news WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                }
+            }
+        }
+    }
+
+
+
+
+    function editArticle ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+            $title = $data -> title;
+            $preview = $data -> preview;
+            $content = $data -> content;
+
+            $query = mysql_query("UPDATE news SET title = '$title', preview = '$preview', content = '$content' WHERE id = $id");
+            if (!$query) {
+                echo(json_encode(mysql_error()));
+                return false;
+            } else {
+                $query2 = mysql_query("SELECT * FROM news WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error query2"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                    return true;
+                }
+            }
+        }
+    }
+
+
+
+    function deleteArticle ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+
+            $query = mysql_query("DELETE FROM news WHERE id = $id");
+            if (!$query) {
+                echo(json_encode(mysql_error()));
+                return false;
+            } else {
+                echo(json_encode("success"));
+                return true;
+            }
+        }
+     }
+
 
 ?>

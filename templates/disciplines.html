@@ -1,0 +1,61 @@
+<row centered>
+    <column cols="1"></column>
+    <column cols="10">
+        <h2>
+            Преподаваемые дисциплины
+            <button type="primary" small class="right" ng-show="inAddMode === false" ng-click="addMode(true)">Добавить дисциплину</button>
+        </h2>
+
+    </column>
+    <column cols="1">
+    </column>
+</row>
+
+<row centered>
+    <column cols="1"></column>
+    <column cols="10">
+        <div class="width-12" style="background: white; padding: 20px;">
+            <table class="table-stripped">
+                <thead>
+                <tr>
+                    <th>Наименование дисциплины</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-show="inAddMode === true">
+                    <td class="width-9">
+                        <label>
+                            Наименование дисциплины
+                            <span class="error right" ng-show="errors['title'] !== undefined">{{ errors["title"] }}</span>
+                        </label>
+                        <input type="text" class="width-12" name="new-discipline-title" id="new-discipline-title" ng-model="newDiscipline.title" placeholder="Введите наименование дисциплины">
+                    </td>
+                    <td class="width-3 text-right">
+                        </br>
+                        <button type="primary" small ng-click="add()">Добавить</button>
+                        <button type="primary" small ng-click="addMode(false)">Отмена</button>
+                    </td>
+                </tr>
+                <tr ng-repeat="discipline in app.getDisciplines() track by $index">
+                    <td class="width-6">
+                        <span ng-show="discipline.editing === false">{{ discipline.title }}</span>
+                        <input type="text" class="width-12" ng-model="discipline.title" ng-show="discipline.editing === true" ng-change="discipline.changed = true" placeholder="Введите наименование дисциплины">
+                        <label ng-show="discipline.editing === true">
+                            <span class="error right" ng-show="discipline.errors['title'] !== undefined">{{ discipline.errors["title"] }}</span>
+                        </label>
+                    </td>
+                    <td class="width-3 text-right">
+                        <button type="primary" small ng-show="discipline.editing === false && discipline.deleting === false" ng-click="edit(discipline.id)">Изменить</button>
+                        <button type="primary" small ng-show="discipline.editing === false && discipline.deleting === false" ng-click="delete(discipline.id)">Удалить</button>
+                        <button type="primary" small ng-show="discipline.editing === true && discipline.deleting === false" ng-click="save(discipline.id)" ng-disabled="discipline.changed === false">Сохранить</button>
+                        <button type="primary" small ng-show="discipline.deleting === true && discipline.editing === false" ng-click="remove(discipline.id)">Подтвердить</button>
+                        <button type="primary" small ng-show="discipline.editing === true || discipline.deleting === true" ng-click="discipline.cancel()">Отмена</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </column>
+    <column cols="1"></column>
+</row>

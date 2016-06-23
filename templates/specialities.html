@@ -13,64 +13,64 @@
 
 <row centered>
     <column cols="1"></column>
-    <column cols="10">
-
-        <table class="table-stripped">
-            <thead>
-            <tr>
-                <th>Наименование специальности / направления</th>
-                <th>Срок обучения</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr ng-show="inAddMode === true">
-                <td class="width-6">
-                    <label>
-                        Наименование специальности
-                        <span class="error right" ng-show="errors['title'] !== undefined">{{ errors["title"] }}</span>
-                    </label>
-                    <input type="text" class="width-12" name="new-speciality-title" id="new-speciality-title" ng-model="newSpeciality.title" placeholder="Введите наименование специальности">
-                </td>
-                <td class="width-3">
-                    <label>
-                        Срок обучения
-                        <span class="error right" ng-show="errors['duration'] !== undefined">{{ errors["duration"] }}</span>
-                    </label>
-                    <input type="text" class="width-12" name="new-speciality-duration" id="new-speciality-duration" ng-model="newSpeciality.duration" placeholder="Введите срок обучения">
-                </td>
-                <td class="width-3 text-right">
-                    </br>
-                    <button type="primary" small ng-click="add()">Добавить</button>
-                    <button type="primary" small ng-click="addMode(false)">Отмена</button>
-                </td>
-            </tr>
-            <tr ng-repeat="speciality in app.getSpecialities() track by $index">
-                <td class="width-6">
-                    <span ng-show="speciality.editing === false">{{ speciality.title }}</span>
-                    <input type="text" class="width-12" ng-model="speciality.title" ng-show="speciality.editing === true" ng-change="speciality.changed = true" placeholder="Введите наименование специальности">
-                    <label ng-show="speciality.editing === true">
-                        <span class="error right" ng-show="speciality.errors['title'] !== undefined">{{ speciality.errors["title"] }}</span>
-                    </label>
-                </td>
-                <td class="width-3">
-                    <span ng-show="speciality.editing === false">{{ speciality.duration }}</span>
-                    <input type="text" class="width-12" ng-model="speciality.duration" ng-show="speciality.editing === true" ng-change="speciality.changed = true" placeholder="Введите срок обучения">
-                    <label ng-show="speciality.editing === true">
-                        <span class="error right" ng-show="speciality.errors['duration'] !== undefined">{{ speciality.errors["duration"] }}</span>
-                    </label>
-                </td>
-                <td class="width-3 text-right">
-                    <button type="primary" small ng-show="speciality.editing === false && speciality.deleting === false" ng-click="edit(speciality.id)">Изменить</button>
-                    <button type="primary" small ng-show="speciality.editing === false && speciality.deleting === false" ng-click="delete(speciality.id)">Удалить</button>
-                    <button type="primary" small ng-show="speciality.editing === true && speciality.deleting === false" ng-click="save(speciality.id)" ng-disabled="speciality.changed === false">Сохранить</button>
-                    <button type="primary" small ng-show="speciality.deleting === true && speciality.editing === false" ng-click="remove(speciality.id)">Подтвердить</button>
-                    <button type="primary" small ng-show="speciality.editing === true || speciality.deleting === true" ng-click="speciality.cancel()">Отмена</button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
+    <column cols="10" >
+        <div class="width-12" style="background: white; padding: 20px;">
+            <table class="table-stripped">
+                <thead>
+                <tr>
+                    <th>Наименование специальности / направления</th>
+                    <th>Срок обучения</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-show="inAddMode === true">
+                    <td class="width-6">
+                        <label>
+                            Наименование специальности
+                            <span class="error right" ng-show="errors['title'] !== undefined">{{ errors["title"] }}</span>
+                        </label>
+                        <input type="text" class="width-12" name="new-speciality-title" id="new-speciality-title" ng-model="newSpeciality.title" placeholder="Введите наименование специальности">
+                    </td>
+                    <td class="width-3">
+                        <label>
+                            Срок обучения
+                            <span class="error right" ng-show="errors['duration'] !== undefined">{{ errors["duration"] }}</span>
+                        </label>
+                        <input type="text" class="width-12" name="new-speciality-duration" id="new-speciality-duration" ng-model="newSpeciality.duration" placeholder="Введите срок обучения">
+                    </td>
+                    <td class="width-3 text-right">
+                        </br>
+                        <button type="primary" small ng-click="add()">Добавить</button>
+                        <button type="primary" small ng-click="addMode(false)">Отмена</button>
+                    </td>
+                </tr>
+                <tr ng-repeat="speciality in app.getSpecialities() track by $index">
+                    <td class="width-6">
+                        <span ng-show="speciality.editing === false">{{ speciality.title }}</span>
+                        <input type="text" class="width-12" ng-model="speciality.title" ng-show="speciality.editing === true" ng-change="speciality.changed = true" placeholder="Введите наименование специальности">
+                        <label ng-show="speciality.editing === true">
+                            <span class="error right" ng-show="speciality.errors['title'] !== undefined">{{ speciality.errors["title"] }}</span>
+                        </label>
+                    </td>
+                    <td class="width-3">
+                        <span ng-show="speciality.editing === false">{{ speciality.duration }}</span>
+                        <input type="text" class="width-12" ng-model="speciality.duration" ng-show="speciality.editing === true" ng-change="speciality.changed = true" placeholder="Введите срок обучения">
+                        <label ng-show="speciality.editing === true">
+                            <span class="error right" ng-show="speciality.errors['duration'] !== undefined">{{ speciality.errors["duration"] }}</span>
+                        </label>
+                    </td>
+                    <td class="width-3 text-right">
+                        <button type="primary" small ng-show="speciality.editing === false && speciality.deleting === false" ng-click="edit(speciality.id)">Изменить</button>
+                        <button type="primary" small ng-show="speciality.editing === false && speciality.deleting === false" ng-click="delete(speciality.id)">Удалить</button>
+                        <button type="primary" small ng-show="speciality.editing === true && speciality.deleting === false" ng-click="save(speciality.id)" ng-disabled="speciality.changed === false">Сохранить</button>
+                        <button type="primary" small ng-show="speciality.deleting === true && speciality.editing === false" ng-click="remove(speciality.id)">Подтвердить</button>
+                        <button type="primary" small ng-show="speciality.editing === true || speciality.deleting === true" ng-click="speciality.cancel()">Отмена</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </column>
     <column cols="1"></column>
 </row>

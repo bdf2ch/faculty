@@ -5,46 +5,48 @@
 </row>
 <row centered>
     <column cols="6">
-        <form method="post" action="" class="forms" ng-submit="professor.validate()">
-            <section>
-                <label>
-                    Фамилия
-                    <span class="error right" ng-show="professor.errors['surname'] !== undefined">{{ professor.errors["surname"] }}</span>
-                </label>
-                <input type="text" name="surname" ng-model="professor.surname"/>
-            </section>
-            <section>
-                <label>
-                    Имя
-                    <span class="error right" ng-show="professor.errors['name'] !== undefined">{{ professor.errors["name"] }}</span>
-                </label>
-                <input type="text" name="name" ng-model="professor.name"/>
-            </section>
-            <section>
-                <label>
-                    Отчество
-                    <span class="error right" ng-show="professor.errors['fname'] !== undefined">{{ professor.errors["fname"] }}</span>
-                </label>
-                <input type="text" name="fname" ng-model="professor.fname"/>
-            </section>
-            <section>
-                <label>
-                    E-mail
-                    <span class="error right" ng-show="professor.errors['email'] !== undefined">{{ professor.errors["email"] }}</span>
-                </label>
-                <input type="text" name="email" ng-model="professor.email"/>
-            </section>
-            <section>
-                <label>
-                    Пароль
-                    <span class="error right" ng-show="professor.errors['password'] !== undefined">{{ professor.errors["password"] }}</span>
-                </label>
-                <input type="password" name="password" ng-model="professor.password"/>
-            </section>
-            <section>
-                <button type="primary" ng-click="save()">Сохранить изменения</button>
-                <button type="primary" ng-click="gotoStudents()">Вернуться к списку преподавателей</button>
-            </section>
-        </form>
+        <div class="width-12" style="background: white; padding: 20px;">
+            <form method="post" action="" class="forms" ng-submit="professor.validate()">
+                <section>
+                    <label>
+                        Фамилия
+                        <span class="error right" ng-show="professor.errors['surname'] !== undefined">{{ professor.errors["surname"] }}</span>
+                    </label>
+                    <input type="text" name="surname" ng-model="professor.surname"/>
+                </section>
+                <section>
+                    <label>
+                        Имя
+                        <span class="error right" ng-show="professor.errors['name'] !== undefined">{{ professor.errors["name"] }}</span>
+                    </label>
+                    <input type="text" name="name" ng-model="professor.name"/>
+                </section>
+                <section>
+                    <label>
+                        Отчество
+                        <span class="error right" ng-show="professor.errors['fname'] !== undefined">{{ professor.errors["fname"] }}</span>
+                    </label>
+                    <input type="text" name="fname" ng-model="professor.fname"/>
+                </section>
+                <section>
+                    <label>
+                        E-mail
+                        <span class="error right" ng-show="professor.errors['email'] !== undefined">{{ professor.errors["email"] }}</span>
+                    </label>
+                    <input type="text" name="email" ng-model="professor.email"/>
+                </section>
+                <section>
+                    <label>
+                        Пароль
+                        <span class="error right" ng-show="professor.errors['password'] !== undefined">{{ professor.errors["password"] }}</span>
+                    </label>
+                    <input type="password" name="password" ng-model="professor.password"/>
+                </section>
+                <section>
+                    <button type="primary" ng-click="save()">Сохранить изменения</button>
+                    <button type="primary" ng-click="gotoStudents()">Вернуться к списку преподавателей</button>
+                </section>
+            </form>
+        </div>
     </column>
 </row>

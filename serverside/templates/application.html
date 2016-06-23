@@ -23,7 +23,10 @@
 
     <div id="app-header">
         <a href="{{ menuItem.url }}" ng-class="{ 'active': menuItem.active === true }" ng-repeat="menuItem in application.getMenu() track by $index">{{ menuItem.title }}</a>
-        <a href="" class="right">Войти</a>
+        <a href="#/login" id="login" class="right" ng-show="application.getSessionUser() === undefined">Авторизация</a>
+        <a href="" class="right" ng-show="application.getSessionUser() !== undefined">
+            {{ application.getSessionUser().surname + " " + application.getSessionUser().name + " " + application.getSessionUser().fname }}
+        </a>
     </div>
     <div id="app-wrapper" ng-view></div>
 </body>
