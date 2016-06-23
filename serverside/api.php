@@ -11,6 +11,9 @@
 
     if (isset($postdata -> action)) {
         switch ($postdata -> action) {
+            case "login":
+                login($postdata -> data);
+                break;
             case "addSpeciality":
                 addSpeciality($postdata -> data);
                 break;
@@ -59,6 +62,25 @@
         }
     }
 
+
+
+    function login ($data) {
+        if ($data != null) {
+            $email = $data -> email;
+            $password = $data -> password;
+
+            $query = mysql_query("SELECT * FROM users WHERE email = '$email' AND password = '$password' LIMIT 1");
+            if (!$query) {
+                echo(json_encode("error"));
+                return false;
+            } else {
+                $result = mysql_fetch_assoc($query);
+                setcookie("user_id", $result["id"]);
+                echo(json_encode($result));
+                return true;
+            }
+        }
+    }
 
 
 

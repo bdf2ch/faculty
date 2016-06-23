@@ -7,7 +7,7 @@
 <row centered>
     <column cols="4">
         <div class="width-12" style="background: white; padding: 20px;">
-            <form method="post" action="" class="forms" ng-submit="send()">
+            <form method="post" action="" class="forms">
                 <section>
                     <label>
                         E-mail
@@ -26,6 +26,7 @@
                     <button type="primary" class="width-12" ng-click="send()">Войти</button>
                 </section>
             </form>
+            <div ng-show="noUserFound === true">Пользователь не найден</div>
         </div>
     </column>
 </row>

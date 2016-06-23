@@ -3,6 +3,7 @@
     require_once $_SERVER["DOCUMENT_ROOT"]."/serverside/api.php";
 
     $template = new XTemplate($_SERVER["DOCUMENT_ROOT"]."/serverside/templates/application.html");
+    session_start();
 
     $template -> assign("USERS", getUsers());
     $template -> assign("NEWS", getNews());

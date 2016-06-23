@@ -2,8 +2,8 @@
     <column cols="1"></column>
     <column cols="10">
         <h2>
-            Направления и специальности кафедры
-            <button type="primary" small class="right" ng-show="inAddMode === false" ng-click="addMode(true)">Добавить специальность</button>
+            Специальности кафедры
+            <button type="primary" small class="right" ng-show="inAddMode === false && app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true" ng-click="addMode(true)">Добавить специальность</button>
         </h2>
 
     </column>
@@ -20,7 +20,7 @@
                 <tr>
                     <th>Наименование специальности / направления</th>
                     <th>Срок обучения</th>
-                    <th></th>
+                    <th ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -60,7 +60,7 @@
                             <span class="error right" ng-show="speciality.errors['duration'] !== undefined">{{ speciality.errors["duration"] }}</span>
                         </label>
                     </td>
-                    <td class="width-3 text-right">
+                    <td class="width-3 text-right" ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true">
                         <button type="primary" small ng-show="speciality.editing === false && speciality.deleting === false" ng-click="edit(speciality.id)">Изменить</button>
                         <button type="primary" small ng-show="speciality.editing === false && speciality.deleting === false" ng-click="delete(speciality.id)">Удалить</button>
                         <button type="primary" small ng-show="speciality.editing === true && speciality.deleting === false" ng-click="save(speciality.id)" ng-disabled="speciality.changed === false">Сохранить</button>

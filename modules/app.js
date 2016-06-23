@@ -169,6 +169,7 @@ function User (parameters) {
     this.email = "";
     this.password = "";
     this.isProfessor = false;
+    this.fio = "";
     this.editing = false;
     this.deleting = false;
     this.changed = false;
@@ -223,6 +224,7 @@ function User (parameters) {
                 }
             }
         }
+        this.fio = this.surname + " " + this.name + " " + this.fname;
     };
 
     this.cancel = function () {
@@ -312,8 +314,88 @@ function Discipline (parameters) {
 
 
 
+function Result (parameters) {
+    this.id = 0;
+    this.studentId = 0;
+    this.professorId = 0;
+    this.disciplineId = 0;
+    this.value = 0;
+    this.timestamp = 0;
+    this.editing = false;
+    this.deleting = false;
+    this.changed = false;
+    this.backup = {};
+    this.errors = [];
+
+    if (parameters !== undefined) {
+        for (var param in parameters) {
+            if (this.hasOwnProperty(param)) {
+                this[param] = parameters[param];
+                this.backup[param] = parameters[param];
+            }
+        }
+    }
+
+    this.fromSource = function (data) {
+        if (data !== undefined) {
+            for (var field in data) {
+                switch (field) {
+                    case "id":
+                        this.id = parseInt(data[field]);
+                        this.backup.id = parseInt(data[field]);
+                        break;
+                    case "student_id":
+                        this.studentId = parseInt(data[field]);
+                        this.backup.studentId = parseInt(data[field]);
+                        break;
+                    case "professor_id":
+                        this.professorId = parseInt(data[field]);
+                        this.backup.professorId = parseInt(data[field]);
+                        break;
+                    case "discipline_id":
+                        this.disciplineId = parseInt(data[field]);
+                        this.backup.disciplineId = parseInt(data[field]);
+                        break;
+                    case "value":
+                        this.value = parseInt(data[field]);
+                        this.backup.value = parseInt(data[field]);
+                        break;
+                    case "timestamp":
+                        this.timestamp = parseInt(data[field]);
+                        this.backup.timestamp = parseInt(data[field]);
+                        break;
+                }
+            }
+        }
+    };
+
+    this.cancel = function () {
+        for (var param in this.backup) {
+            if (this.hasOwnProperty(param)) {
+                this[param] = this.backup[param];
+            }
+        }
+        this.editing = false;
+        this.deleting = false;
+        this.changed = false;
+    };
+
+    this.validate = function () {
+        this.errors = [];
+        if (this.studentId === 0)
+            this.errors["studentId"] = "Вы не выбрали студента";
+        if (this.disciplineId === 0)
+            this.errors["disciplineId"] = "Вы не выбрали дисциплину";
+        if (this.value === 0)
+            this.errors["value"] = "Вы не выбрали оценку";
+        return Object.keys(this.errors).length;
+    };
+}
+
+
+
 angular
-    .module("app", ["ngRoute"])
+    .module("app", ["ngRoute", "ngCookies"])
     .config(function ($routeProvider) {
         $routeProvider
             .when("/", {
@@ -360,6 +442,10 @@ angular
                 templateUrl: "templates/results.html",
                 controller: "ResultsController"
             })
+            .when("/new-result", {
+                templateUrl: "templates/new-result.html",
+                controller: "NewResultController"
+            })
             .when("/disciplines", {
                 templateUrl: "templates/disciplines.html",
                 controller: "DisciplinesController"
@@ -380,10 +466,10 @@ angular
 
 
 
-function ApplicationFactory () {
+function ApplicationFactory ($cookies, $location) {
     var menu = [
         new Menu ({ url: "#/news", title: "Новости" }),
-        new Menu ({ url: "#/specialities", title: "Направления и специальности" }),
+        new Menu ({ url: "#/specialities", title: "Специальности" }),
         new Menu ({ url: "#/disciplines", title: "Дисциплины" }),
         new Menu ({ url: "#/professors", title: "Педагогический коллектив" }),
         new Menu ({ url: "#/students", title: "Студенты" }),
@@ -393,10 +479,19 @@ function ApplicationFactory () {
     var users = [];
     var specialities = [];
     var disciplines = [];
+    var results = [];
     var currentUser = undefined;
     var sessionUser = undefined;
 
     return {
+        logout: function () {
+            delete $cookies.user_id;
+            sessionUser = undefined;
+            $location.url("/news");
+        },
+        getResults: function () {
+            return results;
+        },
         setSessionUser: function (id) {
             if (id !== undefined) {
                 var length = users.length;
@@ -468,11 +563,12 @@ function ApplicationFactory () {
 
 
 
-function LoginController ($log, $scope, $application, $http, $location) {
+function LoginController ($log, $scope, $application, $http, $location, $cookies) {
     $scope.app = $application;
     $scope.email = "";
     $scope.password = "";
     $scope.errors = [];
+    $scope.noUserFound = false;
 
 
     $scope.send = function () {
@@ -482,6 +578,8 @@ function LoginController ($log, $scope, $application, $http, $location) {
         if ($scope.password === "")
             $scope.errors["password"] = "Вы не указали пароль";
         if (Object.keys($scope.errors).length === 0) {
+            
+            /*
             var length = $application.getUsers().length;
             for (var i = 0; i < length; i++) {
                 var users = $application.getUsers();
@@ -492,6 +590,26 @@ function LoginController ($log, $scope, $application, $http, $location) {
                     $location.url("/news");
                 }
             }
+            */
+
+            $http.post("serverside/api.php", { action: "login", data: { email: $scope.email, password: $scope.password } })
+                .success(function (data) {
+                    if (data !== undefined) {
+                        $log.log(data);
+                        if (data !== "error") {
+                            if (typeof data !== "boolean") {
+                                var user = new User();
+                                user.fromSource(data);
+                                $application.setSessionUser(user.id)
+                                $scope.noUserFound = false;
+                                $cookies.user_id = user.id.toString();
+                                $location.url("/news");
+                            } else {
+                                $scope.noUserFound = true;
+                            }
+                        }
+                    }
+                });
         }
     };
 };
@@ -885,10 +1003,43 @@ function EditStudentController ($scope, $application, $http, $location) {
 
 
 
-function ResultsController ($scope, $application) {
+function ResultsController ($scope, $application, $location) {
     $scope.app = $application;
-
     $scope.app.activeMenu("#/results");
+
+    $scope.gotoNewResult = function () {
+        $location.url("/new-result");
+    };
+
+};
+
+
+
+
+function NewResultController ($scope, $application, $http, $location) {
+    $scope.app = $application;
+    $scope.newResult = new Result();
+    $scope.errors = [];
+    $scope.app.activeMenu("#/results");
+
+    $scope.gotoResults = function () {
+        $location.url("/results");
+    };
+
+    $scope.validate = function () {
+        if ($scope.newResult.validate() === 1) {
+            $http.post("serverside/api.php", { action: "addResult", data: { studentId: $scope.newResult.studentId, professorId: $application.getSessionUser().id, disciplineId: $scope.newResult.disciplineId, value: $scope.newResult.value} })
+                .success(function (data) {
+                    if (data !== undefined) {
+                        var result = new Result();
+                        result.fromSource(data);
+                        $application.getResults().push(result);
+                        $scope.newResult.cancel();
+                        $location.url("/results");
+                    }
+                });
+        }
+    };
 };
 
 
@@ -1013,7 +1164,7 @@ function DisciplinesController ($log, $scope, $application, $http) {
 
 
 
-function runFunction ($log, $rootScope, $application) {
+function runFunction ($log, $rootScope, $application, $cookies) {
     $rootScope.application = $application;
 
     if (window.initData !== null && window.initData !== undefined) {
@@ -1046,6 +1197,11 @@ function runFunction ($log, $rootScope, $application) {
             }
             $log.log($application.getDisciplines());
         }
+    }
+
+
+    if ($cookies.user_id !== undefined) {
+        $application.setSessionUser(parseInt($cookies.user_id));
     }
 
 

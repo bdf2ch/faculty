@@ -24,11 +24,12 @@
     <div id="app-header">
         <a href="{{ menuItem.url }}" ng-class="{ 'active': menuItem.active === true }" ng-repeat="menuItem in application.getMenu() track by $index">{{ menuItem.title }}</a>
         <a href="#/login" id="login" class="right" ng-show="application.getSessionUser() === undefined">Авторизация</a>
-        <a href="" class="right" ng-show="application.getSessionUser() !== undefined">
-            {{ application.getSessionUser().surname + " " + application.getSessionUser().name + " " + application.getSessionUser().fname }}
+        <a href="" class="right" ng-show="application.getSessionUser() !== undefined" ng-click="application.logout()">
+            {{ application.getSessionUser().name + " " + application.getSessionUser().surname  + "  (Выход)"}}
         </a>
     </div>
     <div id="app-wrapper" ng-view></div>
+    <script src="../../libs/angularjs/angular-cookies.min.js"></script>
 </body>
 </html>
 <!-- END: main -->

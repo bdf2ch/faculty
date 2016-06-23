@@ -3,7 +3,7 @@
     <column cols="10">
         <h2>
             Преподаваемые дисциплины
-            <button type="primary" small class="right" ng-show="inAddMode === false" ng-click="addMode(true)">Добавить дисциплину</button>
+            <button type="primary" small class="right" ng-show="inAddMode === false && app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true"" ng-click="addMode(true)">Добавить дисциплину</button>
         </h2>
 
     </column>
@@ -19,7 +19,7 @@
                 <thead>
                 <tr>
                     <th>Наименование дисциплины</th>
-                    <th></th>
+                    <th ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -45,7 +45,7 @@
                             <span class="error right" ng-show="discipline.errors['title'] !== undefined">{{ discipline.errors["title"] }}</span>
                         </label>
                     </td>
-                    <td class="width-3 text-right">
+                    <td class="width-3 text-right" ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true">
                         <button type="primary" small ng-show="discipline.editing === false && discipline.deleting === false" ng-click="edit(discipline.id)">Изменить</button>
                         <button type="primary" small ng-show="discipline.editing === false && discipline.deleting === false" ng-click="delete(discipline.id)">Удалить</button>
                         <button type="primary" small ng-show="discipline.editing === true && discipline.deleting === false" ng-click="save(discipline.id)" ng-disabled="discipline.changed === false">Сохранить</button>

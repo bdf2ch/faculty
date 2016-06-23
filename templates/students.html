@@ -3,7 +3,7 @@
     <column cols="10">
         <h2>
             Студенты кафедры
-            <button type="primary" small class="right" ng-click="gotoNewStudent()">Добавить студента</button>
+            <button type="primary" small class="right" ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true" ng-click="gotoNewStudent()">Добавить студента</button>
         </h2>
 
     </column>
@@ -24,7 +24,7 @@
                     <th>Специальность</th>
                     <th>E-mail</th>
                     <th>Пароль</th>
-                    <th></th>
+                    <th ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -38,7 +38,7 @@
                     </td>
                     <td class="width-1">{{ user.email }}</td>
                     <td>{{ user.password }}</td>
-                    <td class="width-4 text-right">
+                    <td class="width-4 text-right" ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true">
                         <button type="primary" small ng-show="user.deleting === false" ng-click="edit(user.id)">Изменить</button>
                         <button type="primary" small ng-show="user.deleting === false" ng-click="delete(user.id)">Удалить</button>
                         <button type="primary" small ng-show="user.deleting === true" ng-click="remove(user.id)">Подтвердить</button>
