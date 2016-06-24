@@ -84,7 +84,7 @@ function Article (parameters) {
     this.id = 0;
     this.userId = 0;
     this.title = "";
-    this.preview = "";
+    //this.preview = "";
     this.content = "";
     this.timestamp = 0;
     this.editing = false;
@@ -109,10 +109,10 @@ function Article (parameters) {
                         this.title = data[field];
                         this.backup.title = data[field];
                         break;
-                    case "preview":
-                        this.preview = data[field];
-                        this.backup.preview = data[field];
-                        break;
+                    //case "preview":
+                    //    this.preview = data[field];
+                    //    this.backup.preview = data[field];
+                    //    break;
                     case "content":
                         this.content = data[field];
                         this.backup.content = data[field];
@@ -150,8 +150,8 @@ function Article (parameters) {
         this.errors = [];
         if (this.title === "")
             this.errors["title"] = "Вы не указали заголовок новости";
-        if (this.preview === "")
-            this.errors["preview"] = "Вы не указали краткое описание новости";
+        //if (this.preview === "")
+        //    this.errors["preview"] = "Вы не указали краткое описание новости";
         if (this.content === "")
             this.errors["content"] = "Вы не указали содержание новости новости";
         return Object.keys(this.errors).length;
@@ -680,7 +680,7 @@ function LoginController ($log, $scope, $application, $http, $location, $cookies
 
 
 
-function NewsController ($scope, $application, $location) {
+function NewsController ($log, $scope, $application, $location, $http) {
     $scope.app = $application;
     $scope.inAddMode = false;
     $scope.app.activeMenu("#/news");
@@ -704,10 +704,10 @@ function NewsController ($scope, $application, $location) {
 
     $scope.delete = function (id) {
         if (id !== undefined) {
-            var length = $application.getUsers().length;
+            var length = $application.getNews().length;
             for (var i = 0; i < length; i++) {
-                if ($application.getUsers()[i].id === id) {
-                    $application.getUsers()[i].deleting = true;
+                if ($application.getNews()[i].id === id) {
+                    $application.getNews()[i].deleting = true;
                 }
             }
         }
@@ -716,15 +716,15 @@ function NewsController ($scope, $application, $location) {
 
     $scope.remove = function (id) {
         if (id !== undefined) {
-            $http.post("serverside/api.php", { action: "deleteProfessor", data: { id: id } })
+            $http.post("serverside/api.php", { action: "deleteArticle", data: { id: id } })
                 .success(function (data) {
                     if (data !== undefined) {
                         $log.log(JSON.parse(data));
                         if (JSON.parse(data) === "success") {
-                            var length = $application.getUsers().length;
+                            var length = $application.getNews().length;
                             for (var i = 0; i < length; i++) {
-                                if ($application.getUsers()[i].id === id) {
-                                    $application.getUsers().splice(i, 1);
+                                if ($application.getNews()[i].id === id) {
+                                    $application.getNews().splice(i, 1);
                                     break;
                                 }
                             }
@@ -749,7 +749,7 @@ function NewArticleController ($scope, $application, $http, $location) {
 
     $scope.validate = function () {
         if ($scope.newArticle.validate() === 0) {
-            $http.post("serverside/api.php", { action: "addArticle", data: { userId: $application.getSessionUser().id, title: $scope.newArticle.title, preview: $scope.newArticle.preview, content: $scope.newArticle.content } })
+            $http.post("serverside/api.php", { action: "addArticle", data: { userId: $application.getSessionUser().id, title: $scope.newArticle.title, content: $scope.newArticle.content } })
                 .success(function (data) {
                     if (data !== undefined) {
                         var article = new Article();
@@ -765,12 +765,13 @@ function NewArticleController ($scope, $application, $http, $location) {
 
 
 
-function EditArticleController ($scope, $application, $http, $location) {
+function EditArticleController ($log, $scope, $application, $http, $location) {
     $scope.app = $application;
     $scope.article = $application.getCurrentArticle();
+    $log.log("art = ", $scope.article);
 
-    $scope.article.cancel();
-    $scope.article.errors = [];
+   // $scope.article.cancel();
+
 
     $scope.gotoNews = function () {
         $scope.article.cancel();
@@ -779,15 +780,18 @@ function EditArticleController ($scope, $application, $http, $location) {
     };
 
     $scope.save = function () {
-        if ($scope.professor.validate() == 1) {
-            $http.post("serverside/api.php",{ action: "editProfessor",  data: { id: $scope.professor.id, surname: $scope.professor.surname, name: $scope.professor.name, fname: $scope.professor.fname, email: $scope.professor.email, password: $scope.professor.password }})
+        if ($scope.article.validate() === 0) {
+            $http.post("serverside/api.php",{ action: "editArticle",  data: { id: $scope.article.id, title: $scope.article.title, content: $scope.article.content }})
                 .success(function (data) {
                     if (data !== undefined) {
-                        var user = new User();
-                        user.fromSource(data);
-                        user.changed = false;
-                        user.editing = false;
-                        $location.url("/professors");
+                        var article = new Article();
+                        article.fromSource(data);
+                        $scope.article.title = article.title;
+                        $scope.article.content = article.content;
+                        article.changed = false;
+                        article.editing = false;
+                        $scope.article.errors = [];
+                        $location.url("/news");
                     }
                 });
         }

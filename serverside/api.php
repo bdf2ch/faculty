@@ -474,12 +474,12 @@
     function addArticle ($data) {
         if ($data != null) {
             $title = $data -> title;
-            $preview = $data -> preview;
+            //$preview = $data -> preview;
             $content = $data -> content;
             $userId = $data -> userId;
             $timestamp = time();
 
-            $query = mysql_query("INSERT INTO news (title, preview, content, user_id, timestamp) VALUES ('$title', '$preview', '$content', $userId, $timestamp)");
+            $query = mysql_query("INSERT INTO news (title, preview, content, user_id, timestamp) VALUES ('$title', '', '$content', $userId, $timestamp)");
             if (!$query) {
                 echo(json_encode("error"));
                 return false;
@@ -503,10 +503,10 @@
         if ($data != null) {
             $id = $data -> id;
             $title = $data -> title;
-            $preview = $data -> preview;
+            //$preview = $data -> preview;
             $content = $data -> content;
 
-            $query = mysql_query("UPDATE news SET title = '$title', preview = '$preview', content = '$content' WHERE id = $id");
+            $query = mysql_query("UPDATE news SET title = '$title', preview = '', content = '$content' WHERE id = $id");
             if (!$query) {
                 echo(json_encode(mysql_error()));
                 return false;

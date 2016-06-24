@@ -6,14 +6,15 @@
 <row centered>
     <column cols="6">
         <div class="width-12" style="background: white; padding: 20px;">
-            <form method="post" action="" class="forms" ng-submit="newUser.validate()">
+            <form method="post" action="" class="forms">
                 <section>
                     <label>
                         Заголовок новости
-                        <span class="error right" ng-show="newArticle.errors['title'] !== undefined">{{ newArticle.errors["title"] }}</span>
+                        <span class="error right" ng-show="article.errors['title'] !== undefined">{{ article.errors["title"] }}</span>
                     </label>
-                    <input type="text" name="surname" ng-model="newArticle.title"/>
+                    <input type="text" name="surname" ng-model="article.title" ng-change="article.changed = true"/>
                 </section>
+                <!--
                 <section>
                     <label>
                         Краткое содержание новости
@@ -21,15 +22,16 @@
                     </label>
                     <textarea  cols="30" rows="5" ng-model="newArticle.preview"></textarea>
                 </section>
+                -->
                 <section>
                     <label>
                         Содержание новости
-                        <span class="error right" ng-show="newArticle.errors['content'] !== undefined">{{ newArticle.errors["content"] }}</span>
+                        <span class="error right" ng-show="article.errors['content'] !== undefined">{{ article.errors["content"] }}</span>
                     </label>
-                    <textarea  cols="30" rows="5" ng-model="newArticle.content"></textarea>
+                    <textarea  cols="30" rows="5" ng-model="article.content" ng-change="article.changed = true"></textarea>
                 </section>
                 <section>
-                    <button type="primary" ng-click="validate()">Добавить новость</button>
+                    <button type="primary" ng-click="save()" ng-disabled="article.changed === false">Сохранить новость</button>
                     <button type="primary" ng-click="gotoNews()">Вернуться на главную страницу</button>
                 </section>
             </form>
