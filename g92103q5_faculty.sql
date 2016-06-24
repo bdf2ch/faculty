@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Хост: localhost
--- Время создания: Июн 23 2016 г., 13:52
+-- Время создания: Июн 24 2016 г., 15:29
 -- Версия сервера: 5.5.23
 -- Версия PHP: 5.5.34
 
@@ -19,6 +19,8 @@ SET time_zone = "+00:00";
 --
 -- База данных: `g92103q5_faculty`
 --
+CREATE DATABASE IF NOT EXISTS `g92103q5_faculty` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `g92103q5_faculty`;
 
 -- --------------------------------------------------------
 
@@ -28,16 +30,19 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `disciplines` (
   `id` int(11) NOT NULL,
-  `title` varchar(500) NOT NULL
+  `title` varchar(500) NOT NULL,
+  `professor_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Дамп данных таблицы `disciplines`
 --
 
-INSERT INTO `disciplines` (`id`, `title`) VALUES
-(1, 'Теория системного анализа'),
-(2, 'Высшая математика');
+INSERT INTO `disciplines` (`id`, `title`, `professor_id`) VALUES
+(1, 'Теория системного анализа', 12),
+(2, 'Высшая математика', 15),
+(5, 'fgfdgdfg', 17),
+(6, 'Сопромат', 17);
 
 -- --------------------------------------------------------
 
@@ -54,6 +59,19 @@ CREATE TABLE `news` (
   `content` varchar(5000) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Дамп данных таблицы `news`
+--
+
+INSERT INTO `news` (`id`, `title`, `user_id`, `timestamp`, `preview`, `content`) VALUES
+(1, 'пвап', 17, 1466773655, 'рпара', 'парпарар'),
+(2, 'авпав', 17, 1466773788, 'псчмсчмсчм\nчсмсчм\nсчмчсм', 'счмсчм\nсчмсчм\nчсмчсмсччс'),
+(3, 'авпвапвап', 17, 1466774110, 'авпва', 'павпав'),
+(4, 'цйуцйу', 17, 1466774115, 'цйуцйуцй', 'уцйуцйу'),
+(5, 'цйуцй', 17, 1466774119, 'уцйуц', 'йуцйуйц'),
+(6, 'ewqewq', 29, 1466775672, 'fhfghfghgf\nhgfhfghfghfghfghgfh\ngfhfghfghf ghgfhgf gfhgf fghfghfgh\nghgfhfg', 'gfhgfhgfhgf \nhgfhfg gfhfghfg gfhfghfg fwfwef ,mn,n rewrwe\n dfdsfsdf fhfghfghgf\nhgfhfghfghfghfghgfh\ngfhfghfghf ghgfhgf gfhgf fghfghfgh\nghgfhfg'),
+(7, 'gdfgfdg', 29, 1466776380, 'fdgfdgfdgfdgd', 'fdgdfgfdgdfgdf');
+
 -- --------------------------------------------------------
 
 --
@@ -68,6 +86,15 @@ CREATE TABLE `results` (
   `timestamp` int(11) NOT NULL,
   `value` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Дамп данных таблицы `results`
+--
+
+INSERT INTO `results` (`id`, `student_id`, `professor_id`, `discipline_id`, `timestamp`, `value`) VALUES
+(4, 29, 12, 1, 1466764806, 5),
+(5, 30, 17, 5, 1466765880, 3),
+(6, 30, 17, 6, 1466766710, 2);
 
 -- --------------------------------------------------------
 
@@ -115,8 +142,6 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `surname`, `name`, `fname`, `email`, `is_professor`, `password`, `speciality_id`) VALUES
-(1, 'Васянов', 'Васян', 'Васянович', 'vasyan@mail.ru', 0, 'qwerty', 5),
-(4, 'Тестов', 'Тест', 'Тестович', 'test@mail.ru', 0, 'qwerty', 4),
 (9, 'Романовская', 'Юлия', 'Владимировна', 'romanovskayayuv@mstu.edu.ru', 1, 'romanovskayayuv@mstu.edu.ru', 0),
 (10, 'Намгаладзе', 'Александр', 'Андреевич', 'namgaladzeaa@mstu.edu.ru', 1, 'namgaladzeaa@mstu.edu.ru', 0),
 (11, 'Зуев', 'Юрий', 'Анатольевич', 'zuevyua@mstu.edu.ru', 1, 'zuevyua@mstu.edu.ru', 0),
@@ -136,7 +161,10 @@ INSERT INTO `users` (`id`, `surname`, `name`, `fname`, `email`, `is_professor`, 
 (25, 'Авдеева', 'Елена', 'Николаевна', 'avdeevaen@mstu.edu.ru', 1, 'avdeevaen@mstu.edu.ru', 0),
 (26, 'Качала', 'Надежда', 'Михайловна', 'kachalanm@mstu.edu.ru', 1, 'kachalanm@mstu.edu.ru', 0),
 (27, 'Кириченко', 'Александр', 'Эдуардович', 'kirichenkoae@mstu.edu.ru', 1, 'kirichenkoae@mstu.edu.ru', 0),
-(28, 'Котомин', 'Александр', 'Борисович', 'kotominab@mstu.edu.ru', 1, 'kotominab@mstu.edu.ru', 0);
+(28, 'Котомин', 'Александр', 'Борисович', 'kotominab@mstu.edu.ru', 1, 'kotominab@mstu.edu.ru', 0),
+(29, 'Тестов', 'Тест', 'Тестович', 'test@mail.ru', 0, 'qwerty', 5),
+(30, 'Сарделькин', 'Анатолий', 'Аликперович', 'test2@mail.ru', 0, 'qwerty', 11),
+(39, 'екнек', 'некн', 'екнеекнек', 'екн', 0, 'екнекн', 0);
 
 --
 -- Индексы сохранённых таблиц
@@ -180,27 +208,27 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT для таблицы `disciplines`
 --
 ALTER TABLE `disciplines`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 --
 -- AUTO_INCREMENT для таблицы `news`
 --
 ALTER TABLE `news`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 --
 -- AUTO_INCREMENT для таблицы `results`
 --
 ALTER TABLE `results`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 --
 -- AUTO_INCREMENT для таблицы `specialities`
 --
 ALTER TABLE `specialities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 --
 -- AUTO_INCREMENT для таблицы `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
