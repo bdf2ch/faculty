@@ -59,6 +59,12 @@
             case "deleteArticle":
                 deleteArticle($postdata -> data);
                 break;
+            case "addResult":
+                addResult($postdata -> data);
+                break;
+            case "editResult":
+                editResult($postdata -> data);
+                break;
         }
     }
 
@@ -397,8 +403,9 @@
     function addDiscipline ($data) {
         if ($data != null) {
             $title = $data -> title;
+            $professorId = $data -> professorId;
 
-            $query = mysql_query("INSERT INTO disciplines (title) VALUES ('$title')");
+            $query = mysql_query("INSERT INTO disciplines (title, professor_id) VALUES ('$title', $professorId)");
             if (!$query) {
                     echo(json_encode("error"));
                     return false;
@@ -532,6 +539,59 @@
             }
         }
      }
+
+
+    function addResult($data) {
+        if ($data != null) {
+             $disciplineId = $data -> disciplineId;
+             $studentId = $data -> studentId;
+             $professorId = $data -> professorId;
+             $value = $data -> value;
+             $timestamp = time();
+
+             $query = mysql_query("INSERT INTO results (discipline_id, student_id, professor_id, value, timestamp) VALUES ($disciplineId, $studentId, $professorId, $value, $timestamp)");
+             if (!$query) {
+                 echo(json_encode("error"));
+                 return false;
+             } else {
+                 $id = mysql_insert_id();
+                 $query2 = mysql_query("SELECT * FROM results WHERE id = $id");
+                 if (!$query2) {
+                     echo(json_encode("error"));
+                     return false;
+                 } else {
+                     echo(json_encode(mysql_fetch_assoc($query2)));
+                 }
+             }
+        }
+    }
+
+
+
+
+    function editResult ($data) {
+        if ($data != null) {
+            $id = $data -> id;
+            $disciplineId = $data -> disciplineId;
+            $studentId = $data -> studentId;
+            $value = $data -> value;
+
+            $query = mysql_query("UPDATE results SET discipline_id = $disciplineId, student_id = $studentId, value = $value WHERE id = $id");
+            if (!$query) {
+                echo(json_encode(mysql_error()));
+                return false;
+            } else {
+                $query2 = mysql_query("SELECT * FROM results WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error query2"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                    return true;
+                }
+            }
+        }
+    }
 
 
 ?>

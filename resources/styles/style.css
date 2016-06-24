@@ -67,6 +67,7 @@ body {
   min-width: 1200px;
   overflow: auto;
   padding-top: 40px;
+  box-sizing: border-box;
   background: url("../images/bg2.png");
 }
 .news {
@@ -104,4 +105,18 @@ body {
 }
 #media-grid > div:nth-child(5n) {
   height: 130px;
+}
+.article {
+  display: inline-block;
+  float: left;
+  width: 30%;
+  margin-bottom: 20px;
+  margin-right: 5%;
+  padding: 20px;
+  box-sizing: border-box;
+  background: white;
+  border: 1px solid lightgray;
+}
+.article:nth-child(3n) {
+  margin-right: 0px;
 }

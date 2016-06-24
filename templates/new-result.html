@@ -16,10 +16,10 @@
                 </section>
                 <section>
                     <label>
-                        Имя
-                        <span class="error right" ng-show="newUser.errors['name'] !== undefined">{{ newUser.errors["name"] }}</span>
+                        Дисциплина
+                        <span class="error right" ng-show="newResult.errors['disciplineId'] !== undefined">{{ newDiscipline.errors["disciplineId"] }}</span>
                     </label>
-                    <input type="text" name="name" ng-model="newUser.name"/>
+                    <select class="select" ng-model="newResult.disciplineId" ng-options="disc.id as disc.title for disc in app.getDisciplines()"></select>
                 </section>
                 <section>
                     <label>

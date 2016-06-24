@@ -5,53 +5,55 @@
 </row>
 <row centered>
     <column cols="6">
-        <form method="post" action="" class="forms" ng-submit="newUser.validate()">
-            <section>
-                <label>
-                    Фамилия
-                    <span class="error right" ng-show="newUser.errors['surname'] !== undefined">{{ newUser.errors["surname"] }}</span>
-                </label>
-                <input type="text" name="surname" ng-model="newUser.surname"/>
-            </section>
-            <section>
-                <label>
-                    Имя
-                    <span class="error right" ng-show="newUser.errors['name'] !== undefined">{{ newUser.errors["name"] }}</span>
-                </label>
-                <input type="text" name="name" ng-model="newUser.name"/>
-            </section>
-            <section>
-                <label>
-                    Отчество
-                    <span class="error right" ng-show="newUser.errors['fname'] !== undefined">{{ newUser.errors["fname"] }}</span>
-                </label>
-                <input type="text" name="fname" ng-model="newUser.fname"/>
-            </section>
-            <section>
-                <label>
-                    E-mail
-                    <span class="error right" ng-show="newUser.errors['email'] !== undefined">{{ newUser.errors["email"] }}</span>
-                </label>
-                <input type="text" name="email" ng-model="newUser.email"/>
-            </section>
-            <section>
-                <label>
-                    Пароль
-                    <span class="error right" ng-show="newUser.errors['password'] !== undefined">{{ newUser.errors["password"] }}</span>
-                </label>
-                <input type="password" name="password" ng-model="newUser.password"/>
-            </section>
-            <section>
-                <label>
-                    Специальность
-                    <span class="error right" ng-show="newUser.errors['specialityId'] !== undefined">{{ newUser.errors["specialityId"] }}</span>
-                </label>
-                <select class="select" ng-model="newUser.specialityId" ng-options="spec.id as spec.title for spec in app.getSpecialities()"></select>
-            </section>
-            <section>
-                <button type="primary" ng-click="validate()">Добавить студента</button>
-                <button type="primary" ng-click="gotoStudents()">Вернуться к списку студентов</button>
-            </section>
-        </form>
+        <div class="width-12" style="background: white; padding: 20px;">
+            <form method="post" action="" class="forms" ng-submit="newUser.validate()">
+                <section>
+                    <label>
+                        Фамилия
+                        <span class="error right" ng-show="newUser.errors['surname'] !== undefined">{{ newUser.errors["surname"] }}</span>
+                    </label>
+                    <input type="text" name="surname" ng-model="newUser.surname"/>
+                </section>
+                <section>
+                    <label>
+                        Имя
+                        <span class="error right" ng-show="newUser.errors['name'] !== undefined">{{ newUser.errors["name"] }}</span>
+                    </label>
+                    <input type="text" name="name" ng-model="newUser.name"/>
+                </section>
+                <section>
+                    <label>
+                        Отчество
+                        <span class="error right" ng-show="newUser.errors['fname'] !== undefined">{{ newUser.errors["fname"] }}</span>
+                    </label>
+                    <input type="text" name="fname" ng-model="newUser.fname"/>
+                </section>
+                <section>
+                    <label>
+                        E-mail
+                        <span class="error right" ng-show="newUser.errors['email'] !== undefined">{{ newUser.errors["email"] }}</span>
+                    </label>
+                    <input type="text" name="email" ng-model="newUser.email"/>
+                </section>
+                <section>
+                    <label>
+                        Пароль
+                        <span class="error right" ng-show="newUser.errors['password'] !== undefined">{{ newUser.errors["password"] }}</span>
+                    </label>
+                    <input type="password" name="password" ng-model="newUser.password"/>
+                </section>
+                <section>
+                    <label>
+                        Специальность
+                        <span class="error right" ng-show="newUser.errors['specialityId'] !== undefined">{{ newUser.errors["specialityId"] }}</span>
+                    </label>
+                    <select class="select" ng-model="newUser.specialityId" ng-options="spec.id as spec.title for spec in app.getSpecialities()"></select>
+                </section>
+                <section>
+                    <button type="primary" ng-click="validate()">Добавить студента</button>
+                    <button type="primary" ng-click="gotoStudents()">Вернуться к списку студентов</button>
+                </section>
+            </form>
+        </div>
     </column>
 </row>

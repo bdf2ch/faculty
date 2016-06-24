@@ -15,6 +15,37 @@
     <column cols="1"></column>
     <column cols="10" >
         <div class="width-12" style="background: white; padding: 20px;">
+            <form class="forms" ng-show="inAddMode === true">
+                <fieldset>
+                    <legend>Новая специальность</legend>
+                    <section>
+                        <row end>
+                            <column cols="8">
+                                <label>
+                                    Наименование специальности
+                                    <span class="error right" ng-show="errors['title'] !== undefined">{{ errors["title"] }}</span>
+                                </label>
+                                <input type="text" class="width-12" name="new-speciality-title" id="new-speciality-title" ng-model="newSpeciality.title" placeholder="Введите наименование специальности">
+                            </column>
+
+                            <column cols="4">
+                                <label>
+                                    Срок обучения
+                                    <span class="error right" ng-show="errors['duration'] !== undefined">{{ errors["duration"] }}</span>
+                                </label>
+                                <input type="text" class="width-12" name="new-speciality-duration" id="new-speciality-duration" ng-model="newSpeciality.duration" placeholder="Введите срок обучения">
+                            </column>
+                        </row>
+                    </section>
+                    <section></section>
+                    <section>
+                        <button type="primary" ng-click="add()">Добавить</button>
+                        <button type="primary" ng-click="addMode(false)">Отмена</button>
+                    </section>
+                </fieldset>
+            </form>
+
+
             <table class="table-stripped">
                 <thead>
                 <tr>
@@ -24,36 +55,15 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr ng-show="inAddMode === true">
-                    <td class="width-6">
-                        <label>
-                            Наименование специальности
-                            <span class="error right" ng-show="errors['title'] !== undefined">{{ errors["title"] }}</span>
-                        </label>
-                        <input type="text" class="width-12" name="new-speciality-title" id="new-speciality-title" ng-model="newSpeciality.title" placeholder="Введите наименование специальности">
-                    </td>
-                    <td class="width-3">
-                        <label>
-                            Срок обучения
-                            <span class="error right" ng-show="errors['duration'] !== undefined">{{ errors["duration"] }}</span>
-                        </label>
-                        <input type="text" class="width-12" name="new-speciality-duration" id="new-speciality-duration" ng-model="newSpeciality.duration" placeholder="Введите срок обучения">
-                    </td>
-                    <td class="width-3 text-right">
-                        </br>
-                        <button type="primary" small ng-click="add()">Добавить</button>
-                        <button type="primary" small ng-click="addMode(false)">Отмена</button>
-                    </td>
-                </tr>
-                <tr ng-repeat="speciality in app.getSpecialities() track by $index">
-                    <td class="width-6">
+                <tr ng-init="usr = app.getSessionUser()" ng-repeat="speciality in app.getSpecialities() track by $index">
+                    <td ng-class="{ 'width-7': usr !== undefined && usr.isProfessor === true, 'width-10': usr === undefined || (usr !== undefined && usr.isProfessor === false) }">
                         <span ng-show="speciality.editing === false">{{ speciality.title }}</span>
                         <input type="text" class="width-12" ng-model="speciality.title" ng-show="speciality.editing === true" ng-change="speciality.changed = true" placeholder="Введите наименование специальности">
                         <label ng-show="speciality.editing === true">
                             <span class="error right" ng-show="speciality.errors['title'] !== undefined">{{ speciality.errors["title"] }}</span>
                         </label>
                     </td>
-                    <td class="width-3">
+                    <td ng-class="{ 'width-2': usr !== undefined && usr.isProfessor === true, 'width-2': usr === undefined || (usr !== undefined && usr.isProfessor === false) }">
                         <span ng-show="speciality.editing === false">{{ speciality.duration }}</span>
                         <input type="text" class="width-12" ng-model="speciality.duration" ng-show="speciality.editing === true" ng-change="speciality.changed = true" placeholder="Введите срок обучения">
                         <label ng-show="speciality.editing === true">

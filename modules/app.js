@@ -118,8 +118,8 @@ function Article (parameters) {
                         this.backup.content = data[field];
                         break;
                     case "timestamp":
-                        this.timestamp = parseInt(data[field]);
-                        this.backup.timestamp = parseInt(data[field]);
+                        this.timestamp = new moment.unix(parseInt(data[field]));
+                        this.backup.timestamp = new moment.unix(parseInt(data[field]));
                         break;
                 }
             }
@@ -261,6 +261,7 @@ function User (parameters) {
 function Discipline (parameters) {
     this.id = 0;
     this.title = "";
+    this.professorId = 0;
     this.editing = false;
     this.deleting = false;
     this.changed = false;
@@ -283,6 +284,10 @@ function Discipline (parameters) {
                     case "id":
                         this.id = parseInt(data[field]);
                         this.backup.id = parseInt(data[field]);
+                        break;
+                    case "professor_id":
+                        this.professorId = parseInt(data[field]);
+                        this.backup.professorId = parseInt(data[field]);
                         break;
                     case "title":
                         this.title = data[field];
@@ -308,6 +313,8 @@ function Discipline (parameters) {
         this.errors = [];
         if (this.title === "")
             this.errors["title"] = "Вы не указали наименование дисциплины";
+        if (this.professorId === 0)
+            this.errors["professorId"] = "Вы не указали преподавателя";
         return Object.keys(this.errors).length;
     };
 };
@@ -361,7 +368,7 @@ function Result (parameters) {
                         this.backup.value = parseInt(data[field]);
                         break;
                     case "timestamp":
-                        this.timestamp = parseInt(data[field]);
+                        this.timestamp = new moment.unix(parseInt(data[field]));
                         this.backup.timestamp = parseInt(data[field]);
                         break;
                 }
@@ -372,7 +379,8 @@ function Result (parameters) {
     this.cancel = function () {
         for (var param in this.backup) {
             if (this.hasOwnProperty(param)) {
-                this[param] = this.backup[param];
+                if (param !== "timestamp")
+                    this[param] = this.backup[param];
             }
         }
         this.editing = false;
@@ -409,6 +417,14 @@ angular
             .when("/news", {
                 templateUrl: "templates/news.html",
                 controller: "NewsController"
+            }).
+            when("/new-article", {
+                templateUrl: "templates/new-article.html",
+                controller: "NewArticleController"
+            })
+            .when("/edit-article", {
+                templateUrl: "templates/edit-article.html",
+                controller: "EditArticleController"
             })
             .when("/specialities", {
                 templateUrl: "templates/specialities.html",
@@ -462,6 +478,7 @@ angular
     .controller("DisciplinesController", DisciplinesController)
     .filter("students", StudentsFilter)
     .filter("professors", ProfessorsFilter)
+    .filter("professorId", ProfessorIdFilter)
     .run(runFunction);
 
 
@@ -480,8 +497,16 @@ function ApplicationFactory ($cookies, $location) {
     var specialities = [];
     var disciplines = [];
     var results = [];
+    var news = [];
     var currentUser = undefined;
     var sessionUser = undefined;
+    var currentArticle = undefined;
+    var marks = [
+        { title: "Неудовлетворительно", value: 2 },
+        { title: "Удовлетворительно", value: 3 },
+        { title: "Хорошо", value: 4 },
+        { title: "Отлично", value: 5 },
+    ];
 
     return {
         logout: function () {
@@ -489,8 +514,25 @@ function ApplicationFactory ($cookies, $location) {
             sessionUser = undefined;
             $location.url("/news");
         },
+        getMarks: function () {
+            return marks;
+        },
+        getMark: function (value) {
+            if (value !== undefined) {
+                var length = marks.length;
+                for (var i = 0; i < length; i++) {
+                    if (marks[i].value === value)
+                        return marks[i].value + " (" + marks[i].title + ")";
+                }
+            }
+        },
         getResults: function () {
             return results;
+        },
+        addResult: function (result) {
+            if (result !== undefined) {
+                results.push(result);
+            }
         },
         setSessionUser: function (id) {
             if (id !== undefined) {
@@ -533,6 +575,16 @@ function ApplicationFactory ($cookies, $location) {
                 users.push(user);
             }
         },
+        getUserById: function (id) {
+            if (id !== undefined) {
+                var length = users.length;
+                for (var i = 0; i < length; i++) {
+                    if (users[i].id === id)
+                        return users[i];
+                }
+                return false;
+            }
+        },
         getSpecialities: function () {
             return specialities;
         },
@@ -553,9 +605,33 @@ function ApplicationFactory ($cookies, $location) {
         getDisciplines: function () {
             return disciplines;
         },
+        getDisciplineById: function (id) {
+            if (id !== undefined) {
+                var length = disciplines.length;
+                for (var i = 0; i < length; i ++) {
+                    if (disciplines[i].id === id)
+                        return disciplines[i];
+                }
+            }
+        },
         addDiscipline: function (discipline) {
             if (discipline !== undefined)
                 disciplines.push(discipline);
+        },
+        getNews: function () {
+            return news;
+        },
+        setCurrentArticle: function (article) {
+            if (article !== undefined) {
+                currentArticle = article;
+            }
+        },
+        getCurrentArticle: function () {
+            return currentArticle;
+        },
+        addArticle: function (article) {
+            if (article !== undefined)
+                news.push(article);
         }
     }
 };
@@ -578,26 +654,13 @@ function LoginController ($log, $scope, $application, $http, $location, $cookies
         if ($scope.password === "")
             $scope.errors["password"] = "Вы не указали пароль";
         if (Object.keys($scope.errors).length === 0) {
-            
-            /*
-            var length = $application.getUsers().length;
-            for (var i = 0; i < length; i++) {
-                var users = $application.getUsers();
-                if (users[i].email === $scope.email && users[i].password === $scope.password) {
-                    $log.log("bingo");
-                    $application.setSessionUser(users[i].id);
-                    $log.log($application.getSessionUser());
-                    $location.url("/news");
-                }
-            }
-            */
 
             $http.post("serverside/api.php", { action: "login", data: { email: $scope.email, password: $scope.password } })
                 .success(function (data) {
                     if (data !== undefined) {
                         $log.log(data);
                         if (data !== "error") {
-                            if (typeof data !== "boolean") {
+                            if (data !== "false") {
                                 var user = new User();
                                 user.fromSource(data);
                                 $application.setSessionUser(user.id)
@@ -617,10 +680,119 @@ function LoginController ($log, $scope, $application, $http, $location, $cookies
 
 
 
-function NewsController ($scope, $application) {
+function NewsController ($scope, $application, $location) {
     $scope.app = $application;
     $scope.inAddMode = false;
     $scope.app.activeMenu("#/news");
+
+
+    $scope.gotoNewArticle = function () {
+        $location.url("/new-article");
+    };
+
+    $scope.edit = function (id) {
+        if (id !== undefined) {
+            var length = $application.getNews().length;
+            for (var i = 0; i < length; i++) {
+                if ($application.getNews()[i].id === id) {
+                    $application.setCurrentArticle($application.getNews()[i]);
+                    $location.url("/edit-article");
+                }
+            }
+        }
+    };
+
+    $scope.delete = function (id) {
+        if (id !== undefined) {
+            var length = $application.getUsers().length;
+            for (var i = 0; i < length; i++) {
+                if ($application.getUsers()[i].id === id) {
+                    $application.getUsers()[i].deleting = true;
+                }
+            }
+        }
+    };
+
+
+    $scope.remove = function (id) {
+        if (id !== undefined) {
+            $http.post("serverside/api.php", { action: "deleteProfessor", data: { id: id } })
+                .success(function (data) {
+                    if (data !== undefined) {
+                        $log.log(JSON.parse(data));
+                        if (JSON.parse(data) === "success") {
+                            var length = $application.getUsers().length;
+                            for (var i = 0; i < length; i++) {
+                                if ($application.getUsers()[i].id === id) {
+                                    $application.getUsers().splice(i, 1);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+        }
+    };
+};
+
+
+
+function NewArticleController ($scope, $application, $http, $location) {
+    $scope.app = $application;
+    $scope.newArticle = new Article();
+    $scope.errors = [];
+    $scope.app.activeMenu("#/news");
+
+    $scope.gotoNews = function () {
+        $location.url("/news");
+    };
+
+    $scope.validate = function () {
+        if ($scope.newArticle.validate() === 0) {
+            $http.post("serverside/api.php", { action: "addArticle", data: { userId: $application.getSessionUser().id, title: $scope.newArticle.title, preview: $scope.newArticle.preview, content: $scope.newArticle.content } })
+                .success(function (data) {
+                    if (data !== undefined) {
+                        var article = new Article();
+                        article.fromSource(data);
+                        $application.getNews().push(article);
+                        $scope.newArticle.cancel();
+                        $location.url("/news");
+                    }
+                });
+        }
+    };
+};
+
+
+
+function EditArticleController ($scope, $application, $http, $location) {
+    $scope.app = $application;
+    $scope.article = $application.getCurrentArticle();
+
+    $scope.article.cancel();
+    $scope.article.errors = [];
+
+    $scope.gotoNews = function () {
+        $scope.article.cancel();
+        $scope.article.errors = [];
+        $location.url("/news");
+    };
+
+    $scope.save = function () {
+        if ($scope.professor.validate() == 1) {
+            $http.post("serverside/api.php",{ action: "editProfessor",  data: { id: $scope.professor.id, surname: $scope.professor.surname, name: $scope.professor.name, fname: $scope.professor.fname, email: $scope.professor.email, password: $scope.professor.password }})
+                .success(function (data) {
+                    if (data !== undefined) {
+                        var user = new User();
+                        user.fromSource(data);
+                        user.changed = false;
+                        user.editing = false;
+                        $location.url("/professors");
+                    }
+                });
+        }
+    };
+
 };
 
 
@@ -730,6 +902,13 @@ function SpecialitiesController ($log, $scope, $application, $http) {
                             for (var i = 0; i < length; i++) {
                                 if ($application.getSpecialities()[i].id === id) {
                                     $application.getSpecialities().splice(i, 1);
+                                }
+                            }
+
+                            length = $application.getUsers().length;
+                            for (var i = 0; i < length; i++) {
+                                if ($application.getUsers()[i].isProfessor === false && $application.getUsers()[i].specialityId === id) {
+                                    $application.getUsers()[i].specialityId = 0;
                                 }
                             }
                         }
@@ -905,6 +1084,15 @@ function StudentsController ($log, $scope, $application, $location, $http) {
                                     break;
                                 }
                             }
+
+                            length = $application.getResults().length;
+                            for (var i = 0; i < length; i++) {
+                                if ($application.getResults()[i].studentId === id) {
+                                    $application.getResults().splice(i, 1);
+                                    length = $application.getResults().length;
+                                    i--;
+                                }
+                            }
                         }
                     }
                 });
@@ -935,6 +1123,21 @@ function ProfessorsFilter ($log) {
         var length = input.length;
         for (var i = 0; i < length; i++) {
             if (input[i].isProfessor === true) {
+                result.push(input[i]);
+            }
+        }
+        return result;
+    };
+};
+
+
+
+function ProfessorIdFilter ($log) {
+    return function (input, id) {
+        var result = [];
+        var length = input.length;
+        for (var i = 0; i < length; i++) {
+            if (input[i].professorId === id) {
                 result.push(input[i]);
             }
         }
@@ -1003,12 +1206,118 @@ function EditStudentController ($scope, $application, $http, $location) {
 
 
 
-function ResultsController ($scope, $application, $location) {
+function ResultsController ($log, $scope, $application, $location, $http) {
     $scope.app = $application;
+    $scope.newResult = new Result();
+    $scope.inAddMode = false;
     $scope.app.activeMenu("#/results");
 
     $scope.gotoNewResult = function () {
         $location.url("/new-result");
+    };
+
+    $scope.addMode = function (flag) {
+        if (flag !== undefined)
+            if (flag === false) {
+                $scope.newResult.cancel();
+                $scope.newResult.errors = [];
+            }
+        $scope.inAddMode = flag;
+    };
+
+
+    $scope.add = function () {
+        $log.log($scope.newResult.errors);
+        if ($scope.newResult.validate() === 0) {
+            $http.post("serverside/api.php", { action: "addResult", data: { studentId: $scope.newResult.studentId, professorId: $application.getSessionUser().id, disciplineId: $scope.newResult.disciplineId, value: $scope.newResult.value} })
+                .success(function (data) {
+                    if (data !== undefined) {
+                        var result = new Result();
+                        result.fromSource(data);
+                        $application.getResults().push(result);
+                        $scope.addMode(false);
+                        $scope.newResult.cancel();
+                        $scope.newResult.errors = [];
+                    }
+                });
+        }
+    };
+
+
+    $scope.edit = function (id) {
+        if (id !== undefined) {
+            var length = $application.getResults().length;
+            for (var i = 0; i < length; i++) {
+                if ($application.getResults()[i].id === id) {
+                    $application.getResults()[i].editing = true;
+                }
+            }
+        }
+    };
+
+
+    $scope.save = function (id) {
+        if (id !== undefined) {
+            var length = $application.getResults().length;
+            for (var i = 0; i < length; i++) {
+                if ($application.getResults()[i].id === id) {
+                    var result = $application.getResults()[i];
+                    $log.log(result);
+                    if (result.validate() === 0) {
+                        $http.post("serverside/api.php", { action: "editResult", data: { id: result.id, studentId: result.studentId, disciplineId: result.disciplineId, value: result.value} })
+                            .success(function (data) {
+                                if (data !== undefined) {
+                                    //var result = new Result();
+                                    //result.fromSource(data);
+                                    result.changed = false;
+                                    result.editing = false;
+                                }
+                            });
+                    }
+                }
+            }
+        }
+    };
+
+
+    $scope.delete = function (id) {
+        if (id !== undefined) {
+            var length = $application.getResults().length;
+            for (var i = 0; i < length; i++) {
+                if ($application.getResults()[i].id === id) {
+                    $application.getResults()[i].deleting = true;
+                }
+            }
+        }
+    };
+
+
+    $scope.remove = function (id) {
+        if (id !== undefined) {
+            $http.post("serverside/api.php", { action: "deleteResult", data: { id: id } })
+                .success(function (data) {
+                    if (data !== undefined) {
+                        $log.log(JSON.parse(data));
+                        if (data === "success") {
+                            var length = $application.getResults().length;
+                            var result = undefined;
+                            for (var i = 0; i < length; i++) {
+                                if ($application.getResults()[i].id === id) {
+                                    $application.getResults().splice(i, 1);
+                                    result = $application.getResults()[i];
+                                }
+                            }
+
+                            length = $application.getUsers().length;
+                            for (var i = 0; i < length; i++) {
+                                if ($application.getUsers()[i].id === result.studentId) {
+                                    $application.getUsers().splice(i, 1);
+                                }
+                            }
+                        }
+                    }
+                });
+        }
     };
 
 };
@@ -1060,6 +1369,8 @@ function DisciplinesController ($log, $scope, $application, $http) {
                 $scope.newDiscipline.title = "";
                 $scope.newDiscipline.duration = 0;
                 $scope.errors = [];
+                $scope.newDiscipline.cancel();
+                $scope.newDiscipline.errors = [];
             }
         $scope.inAddMode = flag;
     };
@@ -1067,13 +1378,9 @@ function DisciplinesController ($log, $scope, $application, $http) {
 
     $scope.add = function () {
         $scope.errors = [];
-        if ($scope.newDiscipline.title === "")
-            $scope.errors["title"] = "Вы не указали наименование дисциплины";
-        $log.log($scope.errors);
-        $log.log(Object.keys($scope.errors).length);
 
-        if (Object.keys($scope.errors).length === 0) {
-            $http.post("serverside/api.php", { action: "addDiscipline", data: { title: $scope.newDiscipline.title}})
+        if ($scope.newDiscipline.validate() === 0) {
+            $http.post("serverside/api.php", { action: "addDiscipline", data: { title: $scope.newDiscipline.title, professorId: $scope.newDiscipline.professorId}})
                 .success(function (data) {
                     if (data !== undefined) {
                         if (data !== "error") {
@@ -1150,6 +1457,15 @@ function DisciplinesController ($log, $scope, $application, $http) {
                                     $application.getDisciplines().splice(i, 1);
                                 }
                             }
+
+                            length = $application.getResults().length;
+                            for (var i = 0; i < length; i++) {
+                                if ($application.getResults()[i].disciplineId === id) {
+                                    $application.getResults().splice(i, 1);
+                                    length = $application.getResults().length;
+                                    i--;
+                                }
+                            }
                         }
                     }
                 });
@@ -1166,6 +1482,8 @@ function DisciplinesController ($log, $scope, $application, $http) {
 
 function runFunction ($log, $rootScope, $application, $cookies) {
     $rootScope.application = $application;
+    
+    moment.locale("ru");
 
     if (window.initData !== null && window.initData !== undefined) {
         if (window.initData.users !== null && window.initData.users !== undefined) {
@@ -1196,6 +1514,26 @@ function runFunction ($log, $rootScope, $application, $cookies) {
                 $application.addDiscipline(discipline);
             }
             $log.log($application.getDisciplines());
+        }
+
+        if (window.initData.results !== null && window.initData.results !== undefined) {
+            var length = window.initData.results.length;
+            for (var i = 0; i < length; i++) {
+                var result = new Result();
+                result.fromSource(window.initData.results[i]);
+                $application.addResult(result);
+            }
+            $log.log($application.getResults());
+        }
+
+        if (window.initData.news !== null && window.initData.news !== undefined) {
+            var length = window.initData.news.length;
+            for (var i = 0; i < length; i++) {
+                var article = new Article();
+                article.fromSource(window.initData.news[i]);
+                $application.addArticle(article);
+            }
+            $log.log($application.getNews());
         }
     }
 

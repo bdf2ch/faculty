@@ -3,7 +3,7 @@
     <column cols="10">
         <h2>
             Результаты экзаменов
-            <button type="primary" small class="right" ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true" ng-click="gotoNewResult()">Добавить результат</button>
+            <button type="primary" small class="right" ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true && inAddMode == false" ng-click="addMode(true)">Добавить результат</button>
         </h2>
 
     </column>
@@ -15,38 +15,88 @@
     <column cols="1"></column>
     <column cols="10" >
         <div class="width-12" style="background: white; padding: 20px;">
+
+
+            <form class="forms" ng-show="inAddMode === true">
+                <fieldset>
+                    <legend>Новый результат экзамена</legend>
+                    <section>
+                        <row end>
+                            <column cols="4">
+                                <label>
+                                    Дисциплина
+                                    <span class="error right" ng-show="newResult.errors['disciplineId'] !== undefined">{{ newResult.errors["disciplineId"] }}</span>
+                                </label>
+                                <select class="select width-12" ng-init="disciplines = (app.getDisciplines() | professorId:app.getSessionUser().id)" ng-model="newResult.disciplineId" ng-options="disc.id as disc.title for disc in disciplines"></select>
+                            </column>
+                            <column cols="4" ng-init="students = (app.getUsers() | students)">
+                                <label>
+                                    Студент
+                                    <span class="error right" ng-show="newResult.errors['studentId'] !== undefined">{{ newResult.errors["studentId"] }}</span>
+                                </label>
+                                <select class="select width-12" ng-model="newResult.studentId" ng-options="user.id as user.fio for user in students"></select>
+                            </column>
+                            <column cols="4">
+                                <label>
+                                    Оценка
+                                    <span class="error right" ng-show="newResult.errors['value'] !== undefined">{{ newResult.errors["value"] }}</span>
+                                </label>
+                                <select class="select width-12" ng-model="newResult.value" ng-options="mark.value as mark.title for mark in app.getMarks()"></select>
+                            </column>
+                        </row>
+                    </section>
+                    <section></section>
+                    <section>
+                        <button type="primary" ng-click="add()">Добавить</button>
+                        <button type="primary" ng-click="addMode(false)">Отмена</button>
+                    </section>
+                </fieldset>
+            </form>
+
+
             <table class="table-stripped">
                 <thead>
                 <tr>
                     <th>Студент</th>
                     <th>Дисциплина</th>
-                    <th>Оценка</th>
+                    <th>Оценка / дата проведения экзамена</th>
                     <th>Преподаватель</th>
-                    <th></th>
+                    <th ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true"></th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="result in app.getResults() track by $index">
-                    <td class="width-6">
-                        <span ng-show="speciality.editing === false">{{ speciality.title }}</span>
-                        <input type="text" class="width-12" ng-model="speciality.title" ng-show="speciality.editing === true" ng-change="speciality.changed = true" placeholder="Введите наименование специальности">
-                        <label ng-show="speciality.editing === true">
-                            <span class="error right" ng-show="speciality.errors['title'] !== undefined">{{ speciality.errors["title"] }}</span>
+                <tr ng-init="usr = app.getSessionUser()" ng-repeat="result in app.getResults() track by $index">
+                    <td ng-class="{ 'width-2': usr !== undefined && usr.isProfessor === true, 'width-3': usr === undefined || (usr !== undefined && usr.isProfessor === false) }">
+                        <span ng-show="result.editing === false">{{ app.getUserById(result.studentId).fio }}</span>
+                        <select class="select width-12" ng-show="result.editing === true" ng-model="result.studentId" ng-change="result.changed = true" ng-options="user.id as user.fio for user in students"></select>
+                        <label ng-show="result.editing === true">
+                            <span class="error right" ng-show="result.errors['studentId'] !== undefined">{{ result.errors["stuentId"] }}</span>
                         </label>
                     </td>
-                    <td class="width-3">
-                        <span ng-show="speciality.editing === false">{{ speciality.duration }}</span>
-                        <input type="text" class="width-12" ng-model="speciality.duration" ng-show="speciality.editing === true" ng-change="speciality.changed = true" placeholder="Введите срок обучения">
-                        <label ng-show="speciality.editing === true">
-                            <span class="error right" ng-show="speciality.errors['duration'] !== undefined">{{ speciality.errors["duration"] }}</span>
+                    <td ng-class="{ 'width-2': usr !== undefined && usr.isProfessor === true, 'width-3': usr === undefined || (usr !== undefined && usr.isProfessor === false) }">
+                        <span ng-show="result.editing === false">{{ app.getDisciplineById(result.disciplineId).title }}</span>
+                        <select class="select width-12" ng-show="result.editing === true" ng-model="result.disciplineId" ng-change="result.changed = true" ng-options="disc.id as disc.title for disc in app.getDisciplines()"></select>
+                        <label ng-show="result.editing === true">
+                            <span class="error right" ng-show="result.errors['disciplineId'] !== undefined">{{ result.errors["specialityId"] }}</span>
                         </label>
                     </td>
-                    <td class="width-3 text-right">
-                        <button type="primary" small ng-show="speciality.editing === false && speciality.deleting === false" ng-click="edit(speciality.id)">Изменить</button>
-                        <button type="primary" small ng-show="speciality.editing === false && speciality.deleting === false" ng-click="delete(speciality.id)">Удалить</button>
-                        <button type="primary" small ng-show="speciality.editing === true && speciality.deleting === false" ng-click="save(speciality.id)" ng-disabled="speciality.changed === false">Сохранить</button>
-                        <button type="primary" small ng-show="speciality.deleting === true && speciality.editing === false" ng-click="remove(speciality.id)">Подтвердить</button>
-                        <button type="primary" small ng-show="speciality.editing === true || speciality.deleting === true" ng-click="speciality.cancel()">Отмена</button>
+                    <td ng-class="{ 'width-2': usr !== undefined && usr.isProfessor === true, 'width-3': usr === undefined || (usr !== undefined && usr.isProfessor === false) }">
+                        <span ng-show="result.editing === false">{{ app.getMark(result.value) }}</span>
+                        <span ng-show="result.editing === false"><br>{{ result.timestamp.format("DD MMM YYYY, HH:mm") }}</span>
+                        <select class="select width-12" ng-show="result.editing === true" ng-model="result.value" ng-change="result.changed = true" ng-options="mark.value as mark.title for mark in app.getMarks()"></select>
+                        <label ng-show="result.editing === true">
+                            <span class="error right" ng-show="result.errors['value'] !== undefined">{{ result.errors["value"] }}</span>
+                        </label>
+                    </td>
+                    <td ng-class="{ 'width-2': usr !== undefined && usr.isProfessor === true, 'width-3': usr === undefined || (usr !== undefined && usr.isProfessor === false) }">
+                        <span>{{ app.getUserById(result.professorId).fio }}</span>
+                    </td>
+                    <td class="width-4 text-right" ng-show="app.getSessionUser() !== undefined && app.getSessionUser().isProfessor === true">
+                        <button type="primary" small ng-show="result.editing === false && result.deleting === false  && result.professorId === app.getSessionUser().id" ng-click="edit(result.id)">Изменить</button>
+                        <button type="primary" small ng-show="result.editing === false && result.deleting === false  && result.professorId === app.getSessionUser().id" ng-click="delete(result.id)">Удалить</button>
+                        <button type="primary" small ng-show="result.editing === true && result.deleting === false  && result.professorId === app.getSessionUser().id" ng-click="save(result.id)" ng-disabled="result.changed === false">Сохранить</button>
+                        <button type="primary" small ng-show="result.deleting === true && result.editing === false  && result.professorId === app.getSessionUser().id" ng-click="remove(result.id)">Подтвердить</button>
+                        <button type="primary" small ng-show="result.editing === true || result.deleting === true  && result.professorId === app.getSessionUser().id" ng-click="result.cancel()">Отмена</button>
                     </td>
                 </tr>
                 </tbody>
