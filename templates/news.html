@@ -4,8 +4,7 @@
         <h2>
             Новости кафедры
             <button type="primary" small class="right" ng-show="inAddMode === false" ng-click="gotoNewArticle()">Добавить новость</button>
-        </h2><br>
-
+        </h2>
     </column>
     <column cols="1"></column>
 </row>
@@ -13,7 +12,32 @@
 <row centered>
     <column cols="1"></column>
     <column cols="10">
+        <div class="article_" ng-repeat="article in app.getNews() track by $index">
+            <div>
+                <h3>{{ article.title }}</h3>
+                <hr>
+            </div>
+            <div>
+                <span class="left small">
+                    <i>{{ article.timestamp.format("DD MMM YYYY в HH:mm") }}</i>
+                </span><br>
+                <p class="lead">
+                    {{ article.content }}
+                </p>
+            </div>
+            <div class="width-12">
+                <span class="left small">
+                    <i>{{ "Новость разместил: " +  app.getUserById(article.userId).fio }}</i>
+                </span><br>
+                <button type="primary" ng-show="article.userId === app.getSessionUser().id && article.deleting === false" ng-click="edit(article.id)" small>Изменить</button>
+                <button type="primary"  ng-show="article.userId === app.getSessionUser().id && article.deleting === false" ng-click="delete(article.id)" small>Удалить</button>
+                <button type="primary" ng-show="article.deleting === true" ng-click="remove(article.id)" small>Подтвердить</button>
+                <button type="primary" ng-show="article.deleting === true" ng-click="article.cancel()" small>Отмена</button>
+            </div>
+        </div>
 
+
+        <!--
         <div class="article" ng-repeat="article in app.getNews() track by $index">
             <div>
                 <h3>{{ article.title }}</h3>
@@ -35,6 +59,7 @@
             <div>
             </div>
         </div>
+        -->
 
 
     </column>
