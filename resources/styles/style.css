@@ -128,3 +128,33 @@ body {
   background: white;
   border: 1px solid lightgrey;
 }
+.article_ h3 {
+  font-weight: normal;
+}
+.article_ h3 a {
+  text-decoration: underline;
+}
+.article_ img {
+  display: block;
+}
+.content-block {
+  padding: 10px;
+  background: white;
+}
+.tag {
+  display: inline-block;
+  height: 20px;
+  margin-right: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 12px;
+  line-height: 20px;
+  text-decoration: none;
+  color: black;
+  background: #FFE0B2;
+  box-sizing: border-box;
+}
+.tag.selected {
+  color: white;
+  background: #80CBC4;
+}

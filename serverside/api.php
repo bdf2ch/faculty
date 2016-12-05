@@ -236,6 +236,23 @@
 
 
 
+    function getTags () {
+        global $link;
+        $result = array();
+
+        $query = mysql_query("SELECT * FROM tags", $link);
+        if (!$query)
+            return json_encode("error");
+        else {
+            while ($row = mysql_fetch_assoc($query)) {
+                array_push($result, $row);
+            }
+            return json_encode($result);
+        }
+    }
+
+
+
     function getSpecialities () {
         global $link;
         $result = array();

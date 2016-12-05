@@ -11,28 +11,36 @@
 
 <row centered>
     <column cols="1"></column>
-    <column cols="10">
+    <column cols="7">
         <div class="article_" ng-repeat="article in app.getNews() track by $index">
             <div>
-                <h3>{{ article.title }}</h3>
+                <h3><a ng-href="#/news/{{ article.id  }}">{{ article.title }}</a></h3>
                 <hr>
             </div>
             <div>
-                <span class="left small">
-                    <i>{{ article.timestamp.format("DD MMM YYYY в HH:mm") }}</i>
-                </span><br>
-                <p class="lead">
-                    {{ article.content }}
-                </p>
+                <div class="row">
+                    <div class="width-4" ng-show="article.image !== ''">
+                        <img ng-src="{{ article.image }}" class="width-12" alt="">
+                    </div>
+                    <div class="width-8" ng-class="{ 'width-12': article.image === '' }">
+                        <p class="lead">{{ article.content }}</p>
+                    </div>
+                </div>
             </div>
             <div class="width-12">
                 <span class="left small">
                     <i>{{ "Новость разместил: " +  app.getUserById(article.userId).fio }}</i>
+                </span>
+                <span class="right small">
+                    <i>{{ article.timestamp.format("DD MMM YYYY в HH:mm") }}</i>
                 </span><br>
                 <button type="primary" ng-show="article.userId === app.getSessionUser().id && article.deleting === false" ng-click="edit(article.id)" small>Изменить</button>
-                <button type="primary"  ng-show="article.userId === app.getSessionUser().id && article.deleting === false" ng-click="delete(article.id)" small>Удалить</button>
+                <button type="primary" ng-show="article.userId === app.getSessionUser().id && article.deleting === false" ng-click="delete(article.id)" small>Удалить</button>
                 <button type="primary" ng-show="article.deleting === true" ng-click="remove(article.id)" small>Подтвердить</button>
                 <button type="primary" ng-show="article.deleting === true" ng-click="article.cancel()" small>Отмена</button>
+            </div>
+            <div>
+
             </div>
         </div>
 
@@ -63,5 +71,11 @@
 
 
     </column>
+    <columns cols="3">
+        <div class="content-block width-12">
+            <h5>Фильтр по тегам</h5>
+            <a href class="tag" ng-class="{ selected: tag.isSelected === true }" ng-repeat="tag in app.getTags() track by $index" ng-click="selectTag(tag.id)">{{ tag.title }}</a>
+        </div>
+    </columns>
     <column cols="1"></column>
 </row>

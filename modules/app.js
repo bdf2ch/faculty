@@ -84,12 +84,14 @@ function Article (parameters) {
     this.id = 0;
     this.userId = 0;
     this.title = "";
-    //this.preview = "";
+    this.preview = "";
     this.content = "";
+    this.image = "";
     this.timestamp = 0;
     this.editing = false;
     this.deleting = false;
     this.changed = false;
+    this.tags = [];
     this.backup = {};
     this.errors = [];
 
@@ -109,17 +111,25 @@ function Article (parameters) {
                         this.title = data[field];
                         this.backup.title = data[field];
                         break;
-                    //case "preview":
-                    //    this.preview = data[field];
-                    //    this.backup.preview = data[field];
-                    //    break;
+                    case "preview":
+                        this.preview = data[field];
+                        this.backup.preview = data[field];
+                        break;
                     case "content":
                         this.content = data[field];
                         this.backup.content = data[field];
                         break;
+                    case "image":
+                        this.image = data[field];
+                        this.backup.image = data[field];
+                        break;
                     case "timestamp":
                         this.timestamp = new moment.unix(parseInt(data[field]));
                         this.backup.timestamp = new moment.unix(parseInt(data[field]));
+                        break;
+                    case "tags":
+                        this.tags = data[field].split(";");
+                        this.backup.tags = data[field];
                         break;
                 }
             }
@@ -150,11 +160,46 @@ function Article (parameters) {
         this.errors = [];
         if (this.title === "")
             this.errors["title"] = "Вы не указали заголовок новости";
-        //if (this.preview === "")
-        //    this.errors["preview"] = "Вы не указали краткое описание новости";
+        if (this.preview === "")
+            this.errors["preview"] = "Вы не указали краткое описание новости";
         if (this.content === "")
             this.errors["content"] = "Вы не указали содержание новости новости";
         return Object.keys(this.errors).length;
+    };
+};
+
+
+
+function Tag (parameters) {
+    this.id = 0;
+    this.title = "";
+    this.isSelected = false;
+    this.backup = {};
+
+    if (parameters !== undefined) {
+        for (var param in parameters) {
+            if (this.hasOwnProperty(param)) {
+                this[param] = parameters[param];
+                this.backup[param] = parameters[param];
+            }
+        }
+    }
+
+    this.fromSource = function (data) {
+        if (data !== undefined) {
+            for (var field in data) {
+                switch (field) {
+                    case "ID":
+                        this.id = parseInt(data[field]);
+                        this.backup.id = parseInt(data[field]);
+                        break;
+                    case "TITLE":
+                        this.title = data[field];
+                        this.backup.title = data[field];
+                        break;
+                }
+            }
+        }
     };
 };
 
@@ -498,6 +543,7 @@ function ApplicationFactory ($cookies, $location) {
     var disciplines = [];
     var results = [];
     var news = [];
+    var tags = [];
     var currentUser = undefined;
     var sessionUser = undefined;
     var currentArticle = undefined;
@@ -505,7 +551,7 @@ function ApplicationFactory ($cookies, $location) {
         { title: "Неудовлетворительно", value: 2 },
         { title: "Удовлетворительно", value: 3 },
         { title: "Хорошо", value: 4 },
-        { title: "Отлично", value: 5 },
+        { title: "Отлично", value: 5 }
     ];
 
     return {
@@ -632,6 +678,15 @@ function ApplicationFactory ($cookies, $location) {
         addArticle: function (article) {
             if (article !== undefined)
                 news.push(article);
+        },
+        getTags: function () {
+            return tags;
+        },
+
+
+        addTag: function (tag) {
+            if (tag !== undefined)
+                tags.push(tag);
         }
     }
 };
@@ -731,6 +786,22 @@ function NewsController ($log, $scope, $application, $location, $http) {
                         }
                     }
                 });
+        }
+    };
+
+
+    $scope.selectTag = function (tagId) {
+        if (tagId !== undefined) {
+            var length = $application.getTags().length;
+            for (var i = 0; i < length; i++) {
+                if ($application.getTags()[i].id === tagId) {
+                    if ($application.getTags()[i].isSelected === false) {
+                        $application.getTags()[i].isSelected = true;
+                    } else {
+                        $application.getTags()[i].isSelected = false;
+                    }
+                }
+            }
         }
     };
 };
@@ -1538,6 +1609,16 @@ function runFunction ($log, $rootScope, $application, $cookies) {
                 $application.addArticle(article);
             }
             $log.log($application.getNews());
+        }
+
+        if (window.initData.tags !== null && window.initData.tags !== undefined) {
+            var length = window.initData.tags.length;
+            for (var i = 0; i < length; i++) {
+                var tag = new Tag();
+                tag.fromSource(window.initData.tags[i]);
+                $application.addTag(tag);
+            }
+            $log.log($application.getTags());
         }
     }
 
