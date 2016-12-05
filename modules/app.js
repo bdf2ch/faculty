@@ -459,13 +459,17 @@ angular
                 templateUrl: "templates/login.html",
                 controller: "LoginController"
             })
-            .when("/news", {
-                templateUrl: "templates/news.html",
-                controller: "NewsController"
-            }).
-            when("/new-article", {
-                templateUrl: "templates/new-article.html",
-                controller: "NewArticleController"
+            //.when("/news", {
+            //    templateUrl: "templates/news.html",
+            //    controller: "NewsController"
+            //})
+            //.when("/news", {
+            //    templateUrl: "templates/news.html",
+            //    controller: "NewsController"
+            //})
+            .when("/news/:articleId", {
+                templateUrl: "templates/article.html",
+                controller: "ArticleController"
             })
             .when("/edit-article", {
                 templateUrl: "templates/edit-article.html",
@@ -802,6 +806,34 @@ function NewsController ($log, $scope, $application, $location, $http) {
                     }
                 }
             }
+        }
+    };
+};
+
+
+
+function ArticleController ($scope, $application, $http, $location) {
+    $scope.app = $application;
+    $scope.article = new Article();
+    $scope.errors = [];
+    $scope.app.activeMenu("#/news");
+
+    $scope.gotoNews = function () {
+        $location.url("/news");
+    };
+
+    $scope.validate = function () {
+        if ($scope.newArticle.validate() === 0) {
+            $http.post("serverside/api.php", { action: "addArticle", data: { userId: $application.getSessionUser().id, title: $scope.newArticle.title, content: $scope.newArticle.content } })
+                .success(function (data) {
+                    if (data !== undefined) {
+                        var article = new Article();
+                        article.fromSource(data);
+                        $application.getNews().push(article);
+                        $scope.newArticle.cancel();
+                        $location.url("/news");
+                    }
+                });
         }
     };
 };
