@@ -253,6 +253,23 @@
 
 
 
+    function getAlbums () {
+        global $link;
+        $result = array();
+
+        $query = mysql_query("SELECT * FROM albums", $link);
+        if (!$query)
+            return json_encode("error");
+        else {
+            while ($row = mysql_fetch_assoc($query)) {
+                array_push($result, $row);
+            }
+            return json_encode($result);
+        }
+    }
+
+
+
     function getSpecialities () {
         global $link;
         $result = array();
@@ -490,25 +507,44 @@
 
     function addArticle ($data) {
         if ($data != null) {
+            $articleId = $data -> articleId;
             $title = $data -> title;
-            //$preview = $data -> preview;
+            $preview = $data -> preview;
             $content = $data -> content;
             $userId = $data -> userId;
+            $tags = $data -> tags;
             $timestamp = time();
 
-            $query = mysql_query("INSERT INTO news (title, preview, content, user_id, timestamp) VALUES ('$title', '', '$content', $userId, $timestamp)");
-            if (!$query) {
-                echo(json_encode("error"));
-                return false;
-            } else {
-                $id = mysql_insert_id();
-                $query2 = mysql_query("SELECT * FROM news WHERE id = $id");
-                if (!$query2) {
+            if ($articleId == 0) {
+                $query = mysql_query("INSERT INTO news (title, preview, content, user_id, image, tags, timestamp) VALUES ('$title', '$preview', '$content', $userId, '', '$tags', $timestamp)");
+                if (!$query) {
                     echo(json_encode("error"));
                     return false;
                 } else {
-                    echo(json_encode(mysql_fetch_assoc($query2)));
+                    $id = mysql_insert_id();
+                    $query2 = mysql_query("SELECT * FROM news WHERE id = $id");
+                    if (!$query2) {
+                        echo(json_encode("error"));
+                        return false;
+                    } else {
+                        echo(json_encode(mysql_fetch_assoc($query2)));
+                    }
+                 }
+            } else {
+                $query = mysql_query("UPDATE news SET user_id = $userId, title = '$title', preview = '$preview', content = '$content', tags = '$tags' WHERE id = $articleId");
+                if (!$query) {
+                    echo(json_encode("error"));
+                    return false;
                 }
+
+                $query = mysql_query("SELECT * FROM news WHERE id = $articleId");
+                if (!$query) {
+                    echo(json_encode("error"));
+                    return false;
+                }
+
+                echo(json_encode(mysql_fetch_assoc($query)));
+                return true;
             }
         }
     }

@@ -134,8 +134,16 @@ body {
 .article_ h3 a {
   text-decoration: underline;
 }
+.article_ hr {
+  margin-top: 5px;
+}
 .article_ img {
   display: block;
+}
+.article_ p {
+  text-align: justify;
+  font-size: 16px;
+  line-height: 18px !important;
 }
 .content-block {
   padding: 10px;
@@ -157,4 +165,7 @@ body {
 .tag.selected {
   color: white;
   background: #80CBC4;
+}
+.tag a {
+  text-decoration: none;
 }

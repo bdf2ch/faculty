@@ -128,8 +128,16 @@ function Article (parameters) {
                         this.backup.timestamp = new moment.unix(parseInt(data[field]));
                         break;
                     case "tags":
-                        this.tags = data[field].split(";");
-                        this.backup.tags = data[field];
+                        if (data[field] !== "") {
+                            var tags = data[field].split(";");
+                            var length = tags.length;
+                            for (var i = 0; i < length; i++) {
+                                var tag = new Tag();
+                                tag.title = tags[i];
+                                this.tags.push(tag);
+                            }
+                            this.backup.tags = this.tags;
+                        }
                         break;
                 }
             }
@@ -166,6 +174,36 @@ function Article (parameters) {
             this.errors["content"] = "Вы не указали содержание новости новости";
         return Object.keys(this.errors).length;
     };
+
+    this.deleteTag = function (tag) {
+        if (tag !== undefined) {
+            var length = this.tags.length;
+            for (var i = 0; i < length; i++) {
+                if (this.tags[i].title === tag) {
+                    this.tags.splice(i, 1);
+                    this.changed = true;
+                }
+            }
+        }
+    };
+};
+
+
+
+function PhotoAlbum (parameters) {
+    this.id = 0;
+    this.userId = 0;
+    this.title = "";
+    this.added = 0;
+
+    if (parameters !== undefined) {
+        for (var param in parameters) {
+            if (this.hasOwnProperty(param)) {
+                this[param] = parameters[param];
+                this.backup[param] = parameters[param];
+            }
+        }
+    }
 };
 
 
@@ -184,6 +222,13 @@ function Tag (parameters) {
             }
         }
     }
+
+    this.validate = function () {
+        this.errors = [];
+        if (this.title === "")
+            this.errors["title"] = "Вы не указали наименование тега";
+        return Object.keys(this.errors).length;
+    };
 
     this.fromSource = function (data) {
         if (data !== undefined) {
@@ -449,7 +494,16 @@ function Result (parameters) {
 
 angular
     .module("app", ["ngRoute", "ngCookies"])
-    .config(function ($routeProvider) {
+    .config(function ($routeProvider, $httpProvider) {
+
+        $httpProvider.defaults.useXDomain = true;
+        delete $httpProvider.defaults.headers.common['X-Requested-With'];
+        $httpProvider.defaults.headers.common = {};
+        $httpProvider.defaults.headers.post = {};
+        $httpProvider.defaults.headers.put = {};
+        $httpProvider.defaults.headers.patch = {};
+
+
         $routeProvider
             .when("/", {
                 templateUrl: "templates/news.html",
@@ -470,6 +524,10 @@ angular
             .when("/news/:articleId", {
                 templateUrl: "templates/article.html",
                 controller: "ArticleController"
+            })
+            .when("/add-article", {
+                templateUrl: "templates/new-article.html",
+                controller: "NewArticleController"
             })
             .when("/edit-article", {
                 templateUrl: "templates/edit-article.html",
@@ -528,6 +586,87 @@ angular
     .filter("students", StudentsFilter)
     .filter("professors", ProfessorsFilter)
     .filter("professorId", ProfessorIdFilter)
+    .filter("tags", tagsFilter)
+    .directive("uploader", ["$log", "$http", function ($log, $http) {
+        return {
+            restrict: "A",
+            scope: {
+                //uploaderUrl: "=",
+                uploaderData: "=",
+                uploaderOnCompleteUpload: "=",
+                uploaderOnBeforeUpload: "="
+            },
+            link: function (scope, element, attrs) {
+                var url = "";
+                var fd = new FormData();
+
+                if (attrs.uploaderUrl === undefined || attrs.uploaderUrl === "") {
+                    $log.log("uploader -> Не задан атрибут - url");
+                    return false;
+                }
+
+                attrs.$observe("uploaderUrl", function (val) {
+                    url = val;
+                    $log.log("interpolated url = ", url);
+
+                });
+
+                /**
+                 * Отслеживаем выбор файла для загрузки
+                 */
+                element.bind("change", function () {
+                    //var fd = new FormData();
+                    angular.forEach(element[0].files, function (file) {
+                        $log.log(file);
+                        fd.append("file", file);
+                    });
+
+                    /* Если задан коллбэк onBeforeUpload - выполняем его */
+                    $log.log(scope.uploaderOnBeforeUpload);
+                    if (scope.uploaderOnBeforeUpload !== undefined && typeof scope.uploaderOnBeforeUpload === "function") {
+                        scope.$apply(scope.uploaderOnBeforeUpload);
+                    }
+
+                    /* Если заданы данные для отправки на сервер - добавляем их в данные формы для отправки */
+                    if (scope.uploaderData !== undefined) {
+                        $log.info(scope.uploaderData);
+                        for (var param in scope.uploaderData) {
+                            fd.append(param, scope.uploaderData[param]);
+                        }
+                    }
+
+                    scope.upload();
+                });
+
+                /**
+                 * Отправляет данные на сервер
+                 */
+                scope.upload = function () {
+
+                    $log.info("upload, link = ", url);
+                    if (fd.has("file")) {
+                        element.prop("disabled", "disabled");
+                        $http.post(url, fd,
+                            {
+                                transformRequest: angular.identity,
+                                headers: {
+                                    "Content-Type": undefined
+                                }
+                            }
+                        ).success(function (data) {
+                            $log.log(data);
+                            element.prop("disabled", "");
+                            if (scope.uploaderOnCompleteUpload !== undefined && typeof scope.uploaderOnCompleteUpload === "function")
+                                scope.uploaderOnCompleteUpload(data);
+                            fd.delete("file");
+                            fd = new FormData();
+                        });
+                    }
+                };
+
+            }
+        }
+    }])
     .run(runFunction);
 
 
@@ -557,6 +696,8 @@ function ApplicationFactory ($cookies, $location) {
         { title: "Хорошо", value: 4 },
         { title: "Отлично", value: 5 }
     ];
+
+    var currentArticle = undefined;
 
     return {
         logout: function () {
@@ -687,10 +828,46 @@ function ApplicationFactory ($cookies, $location) {
             return tags;
         },
 
+        getTag: function (tag) {
+            if (tag !== undefined) {
+                var length = tags.length;
+                for (var i = 0; i < length; i++) {
+                    if (tags[i].title === tag)
+                        return true;
+                }
+                return false;
+            }
+        },
+
 
         addTag: function (tag) {
             if (tag !== undefined)
                 tags.push(tag);
+        },
+
+        selectTag: function (tag) {
+            if (tag !== undefined) {
+                var length = tags.length;
+                for (var i = 0; i < length; i++) {
+                    if (tags[i].title === tag) {
+                        if (tags[i].isSelected === false) {
+                            tags[i].isSelected = true;
+                        } else {
+                            tags[i].isSelected = false;
+                        }
+                    }
+                }
+            }
+        },
+
+        getSelectedTags: function () {
+            var result = [];
+            var length = tags.length;
+            for (var i = 0; i < length; i++) {
+                if (tags[i].isSelected === true)
+                    result.push(tags[i]);
+            }
+            return result;
         }
     }
 };
@@ -746,7 +923,7 @@ function NewsController ($log, $scope, $application, $location, $http) {
 
 
     $scope.gotoNewArticle = function () {
-        $location.url("/new-article");
+        $location.url("/add-article");
     };
 
     $scope.edit = function (id) {
@@ -794,11 +971,11 @@ function NewsController ($log, $scope, $application, $location, $http) {
     };
 
 
-    $scope.selectTag = function (tagId) {
-        if (tagId !== undefined) {
+    $scope.selectTag = function (tag) {
+        if (tag !== undefined) {
             var length = $application.getTags().length;
             for (var i = 0; i < length; i++) {
-                if ($application.getTags()[i].id === tagId) {
+                if ($application.getTags()[i].title === tag) {
                     if ($application.getTags()[i].isSelected === false) {
                         $application.getTags()[i].isSelected = true;
                     } else {
@@ -812,11 +989,20 @@ function NewsController ($log, $scope, $application, $location, $http) {
 
 
 
-function ArticleController ($scope, $application, $http, $location) {
+function ArticleController ($scope, $application, $http, $location, $routeParams) {
     $scope.app = $application;
     $scope.article = new Article();
+    $scope.newTag = new Tag();
     $scope.errors = [];
     $scope.app.activeMenu("#/news");
+
+    if ($routeParams.articleId !== undefined && $application.getNews().length !== 0) {
+        var length = $application.getNews().length;
+        for (var i = 0; i < length; i++) {
+            if ($application.getNews()[i].id === parseInt($routeParams.articleId))
+                $scope.article = $application.getNews()[i];
+        }
+    }
 
     $scope.gotoNews = function () {
         $location.url("/news");
@@ -836,14 +1022,28 @@ function ArticleController ($scope, $application, $http, $location) {
                 });
         }
     };
+
+    $scope.addTag = function (tag) {
+        if (tag !== undefined) {
+            var tag = new Tag();
+            tag.title = tag;
+            $scope.article.tags.push(tag);
+            returntrue;
+        }
+    };
 };
 
 
 
-function NewArticleController ($scope, $application, $http, $location) {
+function NewArticleController ($scope, $log,$application, $http, $location) {
     $scope.app = $application;
     $scope.newArticle = new Article();
+    $scope.newTag = new Tag();
     $scope.errors = [];
+    $scope.uploaderData = {
+        articleId: $scope.newArticle.id,
+        userId: $application.getSessionUser().id
+    };
     $scope.app.activeMenu("#/news");
 
     $scope.gotoNews = function () {
@@ -852,16 +1052,45 @@ function NewArticleController ($scope, $application, $http, $location) {
 
     $scope.validate = function () {
         if ($scope.newArticle.validate() === 0) {
-            $http.post("serverside/api.php", { action: "addArticle", data: { userId: $application.getSessionUser().id, title: $scope.newArticle.title, content: $scope.newArticle.content } })
+            var params = {
+                action: "addArticle",
+                data: {
+                    articleId: $scope.newArticle.id,
+                    userId: $application.getSessionUser().id,
+                    title: $scope.newArticle.title,
+                    preview: $scope.newArticle.preview,
+                    content: $scope.newArticle.content,
+                    tags: $scope.newArticle.tags.join(";")
+                }
+            };
+            $http.post("serverside/api.php", params)
                 .success(function (data) {
                     if (data !== undefined) {
                         var article = new Article();
                         article.fromSource(data);
                         $application.getNews().push(article);
                         $scope.newArticle.cancel();
-                        $location.url("/news");
+                        $location.url("/");
                     }
                 });
+        }
+    };
+
+
+    $scope.onBeforeUploadAttachment = function () {
+        $scope.uploaderData.articleId = $scope.newArticle.id;
+    };
+
+    $scope.onCompleteUploadAttachment = function (data) {
+        $log.log(data);
+        $scope.newArticle.image = data.image;
+        $scope.newArticle.id = parseInt(data.id);
+    };
+
+    $scope.addTag = function () {
+        if ($scope.newTag.validate() === 0) {
+            $scope.newArticle.tags.push($scope.newTag.title);
+            $scope.newTag.title = "";
         }
     };
 };
@@ -1254,6 +1483,33 @@ function ProfessorIdFilter ($log) {
 
 
 
+function tagsFilter ($log, $application) {
+    return function (input) {
+        if ($application.getSelectedTags().length !== 0) {
+            var result = [];
+            var length = input.length;
+            for (var i = 0; i < length; i++) {
+
+                var length2 = input[i].tags.length;
+                for (var z = 0; z < length2; z++) {
+
+                    var length3 = $application.getSelectedTags().length;
+                    for (var x = 0; x < length3; x++) {
+                        if ($application.getSelectedTags()[x].title === input[i].tags[z].title)
+                            result.push(input[i]);
+                    }
+
+                }
+
+            }
+            return result;
+        } else
+            return input;
+    };
+};
+
+
+
 function NewStudentController ($scope, $application, $http, $location) {
     $scope.app = $application;
     $scope.newUser = new User();
@@ -1636,21 +1892,17 @@ function runFunction ($log, $rootScope, $application, $cookies) {
         if (window.initData.news !== null && window.initData.news !== undefined) {
             var length = window.initData.news.length;
             for (var i = 0; i < length; i++) {
+
                 var article = new Article();
                 article.fromSource(window.initData.news[i]);
+                var l = article.tags.length;
+                for (var x = 0; x < l; x++) {
+                    if (!$application.getTag(article.tags[x].title))
+                        $application.getTags().push(article.tags[x]);
+                }
                 $application.addArticle(article);
             }
             $log.log($application.getNews());
-        }
-
-        if (window.initData.tags !== null && window.initData.tags !== undefined) {
-            var length = window.initData.tags.length;
-            for (var i = 0; i < length; i++) {
-                var tag = new Tag();
-                tag.fromSource(window.initData.tags[i]);
-                $application.addTag(tag);
-            }
-            $log.log($application.getTags());
         }
     }
 

@@ -8,6 +8,7 @@
     $template -> assign("USERS", getUsers());
     $template -> assign("NEWS", getNews());
     $template -> assign("TAGS", getTags());
+    $template -> assign("ALBUMS", getAlbums());
     $template -> assign("DISCIPLINES", getDisciplines());
     $template -> assign("RESULTS", getResults());
     $template -> assign("SPECIALITIES", getSpecialities());

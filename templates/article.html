@@ -1,1 +1,34 @@
-ARTICLE
+<row centered>
+    <column cols="1"></column>
+    <column cols="10">
+        <div class="article_">
+            <row>
+                <column cols="12">
+                    <h2>
+                        {{ article.title }}
+                    </h2>
+                    <span class="tag" ng-repeat="tag in article.tags track by $index">{{ tag.title }}</span><br>
+                    <span class="left small">{{ article.timestamp.format("DD MMM YYYY в HH:mm") }}</span>
+                </column>
+            </row>
+
+            <row>
+                <column cols="4" ng-show="article.image !== ''">
+                    <img ng-src="{{ article.image }}" class="width-12" alt="">
+                </column>
+                <column cols="8" ng-show="article.image !== ''">{{ article.content }}</column>
+                <column cols="12" ng-show="article.image === ''">{{ article.content }}</column>
+            </row>
+
+            <row>
+                <column cols="12" ng-init="user = app.getUserById(article.userId)">
+                    <span class="right">
+                        Новость разместил(а) <b>{{ user.surname + ' ' + user.name + ' ' + user.fname }}</b>
+                    </span>
+                </column>
+            </row>
+        </div>
+
+    </column>
+    <column cols="1"></column>
+</row>

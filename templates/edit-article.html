@@ -14,15 +14,29 @@
                     </label>
                     <input type="text" name="surname" ng-model="article.title" ng-change="article.changed = true"/>
                 </section>
-                <!--
+
+                <section>
+                    <label>
+                        Изображение
+                    </label>
+                    <input type="file"
+                           name="file"
+                           uploader
+                           uploader-url="/serverside/articleImageUploader.php"
+                           uploader-data="uploaderData"
+                           uploader-on-before-upload="onBeforeUploadAttachment"
+                           uploader-on-complete-upload="onCompleteUploadAttachment"/><br>
+                    <img ng-src="{{ article.image }}" alt="" ng-show="newArticle.image !== ''">
+                </section>
+
                 <section>
                     <label>
                         Краткое содержание новости
-                        <span class="error right" ng-show="newArticle.errors['preview'] !== undefined">{{ newArticle.errors["preview"] }}</span>
+                        <span class="error right" ng-show="article.errors['preview'] !== undefined">{{ article.errors["preview"] }}</span>
                     </label>
-                    <textarea  cols="30" rows="5" ng-model="newArticle.preview"></textarea>
+                    <textarea  cols="30" rows="5" ng-model="article.preview" ng-change="article.changed = true"></textarea>
                 </section>
-                -->
+
                 <section>
                     <label>
                         Содержание новости
@@ -30,6 +44,23 @@
                     </label>
                     <textarea  cols="30" rows="5" ng-model="article.content" ng-change="article.changed = true"></textarea>
                 </section>
+
+                <section>
+                    <label>
+                        Теги
+                        <span class="error right" ng-show="newTag.errors['title'] !== undefined">{{ newTag.errors["title"] }}</span>
+                    </label>
+                    <span class="tag" ng-repeat="tag in article.tags track by $index">{{ tag.title }}<a href title="Удалить тег" ng-click="article.deleteTag(tag.title)"> &times;</a></span>
+                    <row>
+                        <column cols="10">
+                            <input type="text" name="surname" class="width-12" ng-model="newTag.title"/>
+                        </column>
+                        <column cols="2">
+                            <button type="primary" class="width-12" ng-click="addTag()">Добавить</button>
+                        </column>
+                    </row>
+                </section>
+
                 <section>
                     <button type="primary" ng-click="save()" ng-disabled="article.changed === false">Сохранить новость</button>
                     <button type="primary" ng-click="gotoNews()">Вернуться на главную страницу</button>
