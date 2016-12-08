@@ -44,7 +44,7 @@
             $articleId = mysqli_insert_id($mysqli);
             $encoding = mb_detect_encoding($_FILES["file"]["name"]);
             $name1251 = mb_convert_encoding($_FILES["file"]["name"], "WINDOWS-1251", $encoding);
-            $imageUrl = mysqli_real_escape_string($mysqli, $_SERVER["DOCUMENT_ROOT"].$DS."news".$DS.$articleId.$DS.$name1251);
+            $imageUrl = mysqli_real_escape_string($mysqli, $DS."uploads".$DS."news".$DS.$articleId.$DS.$name1251);
 
             if (!file_exists($_SERVER["DOCUMENT_ROOT"].$DS."uploads".$DS."news".$DS.$articleId)) {
                 if (!mkdir($_SERVER["DOCUMENT_ROOT"].$DS."uploads".$DS."news".$DS.$articleId)) {
@@ -73,7 +73,7 @@
         } else {
             $encoding = mb_detect_encoding($_FILES["file"]["name"]);
             $name1251 = mb_convert_encoding($_FILES["file"]["name"], "WINDOWS-1251", $encoding);
-            $imageUrl = mysqli_real_escape_string($mysqli, $_SERVER["DOCUMENT_ROOT"].$DS."news".$DS.$articleId.$DS.$name1251);
+            $imageUrl = mysqli_real_escape_string($mysqli, $DS."uploads".$DS."news".$DS.$articleId.$DS.$name1251);
 
             if (!file_exists($_SERVER["DOCUMENT_ROOT"].$DS."uploads".$DS."news".$DS.$articleId)) {
                 if (!mkdir($_SERVER["DOCUMENT_ROOT"].$DS."uploads".$DS."news".$DS.$articleId)) {

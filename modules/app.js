@@ -92,6 +92,7 @@ function Article (parameters) {
     this.deleting = false;
     this.changed = false;
     this.tags = [];
+    this.comments = [];
     this.backup = {};
     this.errors = [];
 
@@ -137,6 +138,14 @@ function Article (parameters) {
                                 this.tags.push(tag);
                             }
                             this.backup.tags = this.tags;
+                        }
+                        break;
+                    case "comments":
+                        var length = data[field].length;
+                        for (var i = 0; i < length; i++) {
+                            var comment = new Comment();
+                            comment.fromSource(data[field][i]);
+                            this.comments.push(comment);
                         }
                         break;
                 }
@@ -185,6 +194,81 @@ function Article (parameters) {
                 }
             }
         }
+    };
+
+    this.joinTags = function () {
+        var length = this.tags.length;
+        var tags = "";
+        for (var i = 0; i < length; i++) {
+            tags += this.tags[i].title;
+            tags += i < length - 1 ? ";" : "";
+        }
+        return tags;
+    };
+
+
+    this.addComment = function (comment) {
+        if (comment !== undefined) {
+            this.comments.push(comment);
+            return true;
+        }
+        return false;
+    };
+};
+
+
+
+function Comment (parameters) {
+    this.id = 0;
+    this.articleId = 0;
+    this.userId = 0;
+    this.content = "";
+    this.added = 0;
+    this.backup = {};
+    this.erorrs = [];
+
+    if (parameters !== undefined) {
+        for (var param in parameters) {
+            if (this.hasOwnProperty(param)) {
+                this[param] = parameters[param];
+                this.backup[param] = parameters[param];
+            }
+        }
+    }
+
+    this.fromSource = function (data) {
+        if (data !== undefined) {
+            for (var field in data) {
+                switch (field) {
+                    case "ID":
+                        this.id = parseInt(data[field]);
+                        this.backup.id = parseInt(data[field]);
+                        break;
+                    case "ARTICLE_ID":
+                        this.articleId = parseInt(data[field]);
+                        this.backup.articleId = parseInt(data[field]);
+                        break;
+                    case "USER_ID":
+                        this.userId = parseInt(data[field]);
+                        this.backup.userId = parseInt(data[field]);
+                        break;
+                    case "CONTENT":
+                        this.content = data[field];
+                        this.backup.content = data[field];
+                        break;
+                    case "ADDED":
+                        this.added = new moment.unix(parseInt(data[field]));
+                        break;
+                }
+            }
+        }
+    };
+
+    this.validate = function () {
+        this.errors = [];
+        if(this.content === "")
+            this.errors["content"] = "Вы не указали содержание комментария";
+        return Object.keys(this.errors).length;
     };
 };
 
@@ -671,7 +755,7 @@ angular
 
 
 
-function ApplicationFactory ($cookies, $location) {
+function ApplicationFactory ($cookies, $location, $http) {
     var menu = [
         new Menu ({ url: "#/news", title: "Новости" }),
         new Menu ({ url: "#/specialities", title: "Специальности" }),
@@ -699,7 +783,7 @@ function ApplicationFactory ($cookies, $location) {
 
     var currentArticle = undefined;
 
-    return {
+    var api = {
         logout: function () {
             delete $cookies.user_id;
             sessionUser = undefined;
@@ -868,8 +952,61 @@ function ApplicationFactory ($cookies, $location) {
                     result.push(tags[i]);
             }
             return result;
+        },
+
+
+        tags: {
+            getByTitle: function (title) {
+                if (title !== undefined) {
+                    var length = tags.length;
+                    for (var i = 0; i < length; i++) {
+                        if (tags[i].title === title)
+                            return tags[i];
+                    }
+                    return false;
+                }
+            },
+
+            add: function (tag) {
+                if (tag !== undefined) {
+                    tags.push(tag);
+                    return true;
+                }
+                return false;
+            }
+        },
+
+
+        comments: {
+            add: function (comment, callback) {
+                if (comment !== undefined) {
+                    var params = {
+                        action: "addComment",
+                        data: {
+                            articleId: comment.articleId,
+                            userId: comment.userId,
+                            content: comment.content
+                        }
+                    };
+                    $http.post("/serverside/api.php", params)
+                        .success(function (data) {
+                            if (data !== undefined) {
+                                var comment = new Comment();
+                                comment.fromSource(data);
+                                if (currentArticle !== undefined) {
+                                    currentArticle.comments.push(comment);
+                                    if (callback !== undef && typeof callback === "function")
+                                        callback(comment);
+                                    return true;
+                                }
+                            }
+                        });
+                }
+            }
         }
-    }
+    };
+
+    return api;
 };
 
 
@@ -993,7 +1130,9 @@ function ArticleController ($scope, $application, $http, $location, $routeParams
     $scope.app = $application;
     $scope.article = new Article();
     $scope.newTag = new Tag();
+    $scope.newComment = new Comment();
     $scope.errors = [];
+    $scope.inAddCommentMode = false;
     $scope.app.activeMenu("#/news");
 
     if ($routeParams.articleId !== undefined && $application.getNews().length !== 0) {
@@ -1028,7 +1167,22 @@ function ArticleController ($scope, $application, $http, $location, $routeParams
             var tag = new Tag();
             tag.title = tag;
             $scope.article.tags.push(tag);
-            returntrue;
+            return true;
+        }
+    };
+
+    $scope.cancelAddComment = function () {
+        $scope.inAddCommentMode = false;
+        $scope.newComment.content = "";
+    };
+
+    $scope.addComment = function () {
+        if ($scope.newComment.validate() === 0) {
+            $scope.newComment.articleId = $scope.article.id;
+            $scope.newComment.userId = $application.getSessionUser().id;
+            $application.comments.add($scope.newComment, function (comment) {
+                $log.log("done");
+            });
         }
     };
 };
@@ -1060,7 +1214,7 @@ function NewArticleController ($scope, $log,$application, $http, $location) {
                     title: $scope.newArticle.title,
                     preview: $scope.newArticle.preview,
                     content: $scope.newArticle.content,
-                    tags: $scope.newArticle.tags.join(";")
+                    tags: $scope.newArticle.joinTags()
                 }
             };
             $http.post("serverside/api.php", params)
@@ -1070,6 +1224,14 @@ function NewArticleController ($scope, $log,$application, $http, $location) {
                         article.fromSource(data);
                         $application.getNews().push(article);
                         $scope.newArticle.cancel();
+
+                        var length = $scope.newArticle.tags.length;
+                        for (var i = 0; i < length; i++) {
+                            if (!$application.tags.getByTitle($scope.newArticle.tags[i].title)) {
+                                $application.tags.add($scope.newArticle.tags[i]);
+                            }
+                        }
+
                         $location.url("/");
                     }
                 });
@@ -1089,7 +1251,9 @@ function NewArticleController ($scope, $log,$application, $http, $location) {
 
     $scope.addTag = function () {
         if ($scope.newTag.validate() === 0) {
-            $scope.newArticle.tags.push($scope.newTag.title);
+            var tag = new Tag();
+            tag.title = $scope.newTag.title;
+            $scope.newArticle.tags.push(tag);
             $scope.newTag.title = "";
         }
     };
@@ -1100,9 +1264,11 @@ function NewArticleController ($scope, $log,$application, $http, $location) {
 function EditArticleController ($log, $scope, $application, $http, $location) {
     $scope.app = $application;
     $scope.article = $application.getCurrentArticle();
+    $scope.newTag = new Tag();
+    $scope.uploaderData = {
+        articleId: $scope.article.id
+    };
     $log.log("art = ", $scope.article);
-
-   // $scope.article.cancel();
 
 
     $scope.gotoNews = function () {
@@ -1113,7 +1279,17 @@ function EditArticleController ($log, $scope, $application, $http, $location) {
 
     $scope.save = function () {
         if ($scope.article.validate() === 0) {
-            $http.post("serverside/api.php",{ action: "editArticle",  data: { id: $scope.article.id, title: $scope.article.title, content: $scope.article.content }})
+            var params = {
+                action: "editArticle",
+                data: {
+                    id: $scope.article.id,
+                    title: $scope.article.title,
+                    preview: $scope.article.preview,
+                    content: $scope.article.content,
+                    tags: $scope.article.joinTags()
+                }
+            };
+            $http.post("serverside/api.php", params)
                 .success(function (data) {
                     if (data !== undefined) {
                         var article = new Article();
@@ -1123,10 +1299,48 @@ function EditArticleController ($log, $scope, $application, $http, $location) {
                         article.changed = false;
                         article.editing = false;
                         $scope.article.errors = [];
+
+                        var length = $scope.article.tags.length;
+                        for (var i = 0; i < length; i++) {
+                            if (!$application.tags.getByTitle($scope.article.tags[i].title)) {
+                                $application.tags.add($scope.article.tags[i]);
+                            }
+                        }
+
                         $location.url("/news");
                     }
                 });
         }
+    };
+
+    $scope.addTag = function () {
+        if ($scope.newTag.validate() === 0) {
+            var tag = new Tag();
+            tag.title = $scope.newTag.title;
+            var length = $scope.article.tags.length;
+            for (var i = 0; i < length; i++) {
+                if ($scope.article.tags[i].title === $scope.newTag.title) {
+                    $scope.newTag.errors["title"] = "Такой тег уже есть";
+                    return false;
+                }
+            }
+            $scope.article.tags.push(tag);
+            $scope.newTag.title = "";
+            $scope.article.changed = true;
+        }
+    };
+
+
+    $scope.onBeforeUploadAttachment = function () {
+        $scope.uploaderData.articleId = $scope.article.id;
+    };
+
+
+    $scope.onCompleteUploadAttachment = function (data) {
+        $log.log(data);
+        //$scope.article.image = data.image;
+        $application.getCurrentArticle().image = data.image;
+        //$scope.article.id = parseInt(data.id);
     };
 
 };
@@ -1266,6 +1480,7 @@ function ProfessorsController ($log, $scope, $application, $location, $http) {
         $location.url("/new-professor");
     };
 
+
     $scope.edit = function (id) {
         if (id !== undefined) {
             var length = $application.getUsers().length;
@@ -1277,6 +1492,7 @@ function ProfessorsController ($log, $scope, $application, $location, $http) {
             }
         }
     };
+
 
     $scope.delete = function (id) {
         if (id !== undefined) {
@@ -1495,8 +1711,20 @@ function tagsFilter ($log, $application) {
 
                     var length3 = $application.getSelectedTags().length;
                     for (var x = 0; x < length3; x++) {
-                        if ($application.getSelectedTags()[x].title === input[i].tags[z].title)
-                            result.push(input[i]);
+                        if ($application.getSelectedTags()[x].title === input[i].tags[z].title) {
+
+                            var length4 = result.length;
+                            var found = false;
+                            for (var o = 0; o < length4; o++) {
+                                if (result[o].id === input[i].id)
+                                    found = true;
+                            }
+
+                            if (!found)
+                                result.push(input[i]);
+
+                        }
+
                     }
 
                 }
@@ -1894,11 +2122,18 @@ function runFunction ($log, $rootScope, $application, $cookies) {
             for (var i = 0; i < length; i++) {
 
                 var article = new Article();
-                article.fromSource(window.initData.news[i]);
+                article.fromSource(window.initData.news[i].article);
                 var l = article.tags.length;
                 for (var x = 0; x < l; x++) {
                     if (!$application.getTag(article.tags[x].title))
                         $application.getTags().push(article.tags[x]);
+                }
+
+                var l = window.initData.news[i].comments.length;
+                for (var x = 0; x < l; x++) {
+                    var comment = new Comment();
+                    comment.fromSource(window.initData.news[i].comments[x]);
+                    article.addComment(comment);
                 }
                 $application.addArticle(article);
             }

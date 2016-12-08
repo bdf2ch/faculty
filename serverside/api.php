@@ -65,6 +65,9 @@
             case "editResult":
                 editResult($postdata -> data);
                 break;
+            case "addComment":
+                addComment($postdata -> data);
+                break;
         }
     }
 
@@ -194,7 +197,23 @@
             return json_encode("error");
         else {
             while ($row = mysql_fetch_assoc($query)) {
-                array_push($result, $row);
+                $article = new stdClass();
+                $article -> article = $row;
+                $article -> comments = array();
+                $articleId = $row["ID"];
+
+
+                $comments = mysql_query("SELECT * FROM comments WHERE ARTICLE_ID = $articleId", $link);
+                //if (!$comments)
+                //    return json_encode("error");
+                //else {
+                    while ($comment = mysql_fetch_assoc($comments)) {
+                        array_push($article -> comments, $comment);
+                    }
+                //}
+
+
+                array_push($result, $article);
             }
             return json_encode($result);
         }
@@ -554,12 +573,15 @@
 
     function editArticle ($data) {
         if ($data != null) {
+            global $link;
             $id = $data -> id;
             $title = $data -> title;
-            //$preview = $data -> preview;
-            $content = $data -> content;
+            $preview = $data -> preview;
+            $content = mysql_real_escape_string($data -> content, $link);
+            $tags = $data -> tags;
 
-            $query = mysql_query("UPDATE news SET title = '$title', preview = '', content = '$content' WHERE id = $id");
+
+            $query = mysql_query("UPDATE news SET title = '$title', preview = '$preview', content = '$content', tags = '$tags' WHERE id = $id");
             if (!$query) {
                 echo(json_encode(mysql_error()));
                 return false;
@@ -641,6 +663,35 @@
                 } else {
                     echo(json_encode(mysql_fetch_assoc($query2)));
                     return true;
+                }
+            }
+        }
+    }
+
+
+
+
+
+    function addComment ($data) {
+        if ($data != null) {
+            $articleId = $data -> articleId;
+            $userId = $data -> userId;
+            $content = $data -> content;
+            $added = time();
+
+
+            $query = mysql_query("INSERT INTO comments (article_id, user_id, content, added) VALUES ($articleId, $userId, '$content', $added)");
+            if (!$query) {
+                echo(json_encode("error"));
+                return false;
+            } else {
+                $id = mysql_insert_id();
+                $query2 = mysql_query("SELECT * FROM comments WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
                 }
             }
         }

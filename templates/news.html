@@ -23,14 +23,14 @@
                     <img ng-src="{{ article.image }}" alt="">
                 </column>
                 <column cols="8" ng-show="article.image !== ''">
-                    <p class="lead">{{ article.content }}</p>
+                    <p class="lead">{{ article.preview }}</p>
                     <span class="left small">
                         <i>{{ article.timestamp.format("DD MMM YYYY в HH:mm") }}</i>
                     </span>
                     <a ng-href="#/news/{{ article.id  }}" class="right">Читать полностью</a>
                 </column>
                 <column cols="12" ng-show="article.image === ''">
-                    <p class="lead">{{ article.content }}</p>
+                    <p class="lead">{{ article.preview }}</p>
                     <span class="left small">
                         <i>{{ article.timestamp.format("DD MMM YYYY в HH:mm") }}</i>
                     </span>

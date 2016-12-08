@@ -41,17 +41,13 @@
                     </label>
                     <textarea  cols="30" rows="10" ng-model="newArticle.content"></textarea>
                 </section>
-                <section>
-                    <button type="primary" ng-click="validate()">Добавить новость</button>
-                    <button type="primary" ng-click="gotoNews()">Вернуться на главную страницу</button>
-                </section>
 
                 <section>
                     <label>
                         Теги
                         <span class="error right" ng-show="newTag.errors['title'] !== undefined">{{ newTag.errors["title"] }}</span>
                     </label>
-                    <span class="tag" ng-repeat="tag in newArticle.tags track by $index">{{ tag }}</span>
+                    <span class="tag" ng-repeat="tag in newArticle.tags track by $index">{{ tag.title }}</span>
                     <row>
                         <column cols="10">
                             <input type="text" name="surname" class="width-12" ng-model="newTag.title"/>
