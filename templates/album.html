@@ -1,0 +1,48 @@
+<row centered>
+    <column cols="1"></column>
+    <column cols="10" style="background: white; padding: 10px">
+
+
+        <row>
+            <column cols="12">
+                <div class="width-12" style="background: white; padding: 10px">
+
+                    <row>
+                        <column cols="12">
+                            <span class="left"><b>{{ album.title }}</b></span><br>
+                            <span class="small">Автор: {{ app.getUserById(album.userId).fio }}</span>
+
+                            <input type="file"
+                                   name="file"
+                                   class="right"
+                                   uploader
+                                   uploader-url="/serverside/albumImageUploader.php"
+                                   uploader-data="uploaderData"
+                                   uploader-on-before-upload="onBeforeUploadPhoto"
+                                   uploader-on-complete-upload="onCompleteUploadPhoto"/>
+                        </column>
+                    </row>
+
+                </div>
+            </column>
+        </row>
+
+        <row style="background: white; padding: 10px">
+            <column cols="12" class="text-centered" ng-show="album.photos.length === 0">В альбоме нет фотографий</column>
+        </row>
+
+        <row ng-show="album.photos.length > 0">
+            <column cols="12">
+                <a ng-href="{{ photo.url }}" target="_blank" ng-repeat="photo in album.photos track by $index" class="photo">
+                    <img ng-src="{{ photo.url }}" alt="">
+                </a>
+            </column>
+        </row>
+
+    </column>
+    <column cols="1">
+    </column>
+</row>
+
+
+

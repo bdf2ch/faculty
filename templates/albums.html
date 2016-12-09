@@ -1,0 +1,68 @@
+<row centered>
+    <column cols="1"></column>
+    <column cols="10">
+        <row>
+            <column cols="12">
+                <h2>
+                    Фотоальбомы
+                    <button type="primary" small class="right" ng-show="app.getSessionUser() !== undefined && inAddMode === false" ng-click="inAddMode = true">Добавить альбом</button>
+                    <button type="primary" small class="right" ng-show="inAddMode === true" ng-click="cancelAddAlbum()">Отмена</button>
+                </h2>
+            </column>
+        </row>
+        <row ng-show="inAddMode === true">
+            <column cols="12">
+                <fieldset class="new-block">
+                    <legend>новый фотоальбом</legend>
+                    <section>
+                        <label for="new-album-title">
+                            Наименование
+                            <span class="error right" ng-show="newAlbum.errors['title'] !== undefined">{{ newAlbum.errors["title"] }}</span>
+                        </label>
+                        <input type="text" class="width-12" id="new-album-title" ng-model="newAlbum.title">
+                    </section>
+                    <section>
+                        <button type="primary" ng-click="add()">Добавить</button>
+                    </section>
+                </fieldset>
+            </column>
+        </row>
+
+    </column>
+    <column cols="1">
+    </column>
+</row>
+
+<row centered>
+    <column cols="1"></column>
+    <column cols="10">
+        <div class="width-12" style="background: white; padding: 10px;">
+            <table class="table-stripped">
+                <thead>
+                <tr>
+                    <th>Наименование</th>
+                    <th>Владелец</th>
+                    <th>Фотографий</th>
+                    <th>Дата создания</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="album in app.albums.getAll() track by $index">
+                    <td class="width-3">{{ album.title }}</td>
+                    <td class="width-4">{{ app.getUserById(album.userId).fio }}</td>
+                    <td class="width-1">{{ album.photos.length }}</td>
+                    <td class="width-2">{{ album.added.format("DD.MM.YYYY в HH:mm") }}</td>
+                    <td class="width-2">
+                        <a ng-href="{{ '#/photoalbum/' + album.id }}">Перейти к альбому</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </column>
+    <column cols="1"></column>
+</row>
+
+

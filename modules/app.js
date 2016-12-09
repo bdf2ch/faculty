@@ -279,6 +279,9 @@ function PhotoAlbum (parameters) {
     this.userId = 0;
     this.title = "";
     this.added = 0;
+    this.photos = [];
+    this.errors = [];
+    this.backup = {};
 
     if (parameters !== undefined) {
         for (var param in parameters) {
@@ -288,6 +291,79 @@ function PhotoAlbum (parameters) {
             }
         }
     }
+
+    this.validate = function () {
+        this.errors = [];
+        if (this.title === "")
+            this.errors["title"] = "Вы не указали наименование альбома";
+        return Object.keys(this.errors).length;
+    };
+
+    this.fromSource = function (data) {
+        if (data !== undefined) {
+            for (var field in data) {
+                switch (field) {
+                    case "ID":
+                        this.id = parseInt(data[field]);
+                        this.backup.id = parseInt(data[field]);
+                        break;
+                    case "USER_ID":
+                        this.userId = parseInt(data[field]);
+                        this.backup.userId = parseInt(data[field]);
+                        break;
+                    case "TITLE":
+                        this.title = data[field];
+                        this.backup.title = data[field];
+                        break;
+                    case "ADDED":
+                        this.added = new moment.unix(parseInt(data[field]));
+                        break;
+                }
+            }
+        }
+    };
+};
+
+
+function Photo (parameters) {
+    this.id = 0;
+    this.albumId = 0;
+    this.userId = 0;
+    this.size = 0;
+    this.url = "";
+
+    if (parameters !== undefined) {
+        for (var param in parameters) {
+            if (this.hasOwnProperty(param)) {
+                this[param] = parameters[param];
+                this.backup[param] = parameters[param];
+            }
+        }
+    }
+
+    this.fromSource = function (data) {
+        if (data !== undefined) {
+            for (var field in data) {
+                switch (field) {
+                    case "ID":
+                        this.id = parseInt(data[field]);
+                        break;
+                    case "ALBUM_ID":
+                        this.albumId = parseInt(data[field]);
+                        break;
+                    case "USER_ID":
+                        this.userId = parseInt(data[field]);
+                        break;
+                    case "URL":
+                        this.url = data[field];
+                        break;
+                    case "ADDED":
+                        this.added = new moment.unix(parseInt(data[field]));
+                        break;
+                }
+            }
+        }
+    };
 };
 
 
@@ -657,6 +733,14 @@ angular
                 templateUrl: "templates/disciplines.html",
                 controller: "DisciplinesController"
             })
+            .when("/albums", {
+                templateUrl: "templates/albums.html",
+                controller: "AlbumsController"
+            })
+            .when("/photoalbum/:albumId", {
+                templateUrl: "templates/album.html",
+                controller: "AlbumController"
+            })
             .otherwise({
                     redirectTo: "/"
             })
@@ -762,7 +846,8 @@ function ApplicationFactory ($cookies, $location, $http) {
         new Menu ({ url: "#/disciplines", title: "Дисциплины" }),
         new Menu ({ url: "#/professors", title: "Педагогический коллектив" }),
         new Menu ({ url: "#/students", title: "Студенты" }),
-        new Menu ({ url: "#/results", title: "Результаты экзаменов" })
+        new Menu ({ url: "#/results", title: "Результаты экзаменов" }),
+        new Menu ({ url: "#/albums", title: "Фотоальбомы" })
     ];
 
     var users = [];
@@ -771,6 +856,7 @@ function ApplicationFactory ($cookies, $location, $http) {
     var results = [];
     var news = [];
     var tags = [];
+    var albums = [];
     var currentUser = undefined;
     var sessionUser = undefined;
     var currentArticle = undefined;
@@ -993,15 +1079,45 @@ function ApplicationFactory ($cookies, $location, $http) {
                             if (data !== undefined) {
                                 var comment = new Comment();
                                 comment.fromSource(data);
-                                if (currentArticle !== undefined) {
-                                    currentArticle.comments.push(comment);
-                                    if (callback !== undef && typeof callback === "function")
+                                //if (currentArticle !== undefined) {
+                                //    currentArticle.comments.push(comment);
+                                    if (callback !== undefined && typeof callback === "function")
                                         callback(comment);
                                     return true;
-                                }
+                                //}
                             }
                         });
                 }
+            }
+        },
+
+        albums: {
+            getAll: function () {
+                return albums;
+            },
+
+            add: function (album, callback) {
+                if (album !== undefined) {
+                    var params = {
+                        action: "addAlbum",
+                        data: {
+                            userId: album.userId,
+                            title: album.title
+                        }
+                    };
+                    $http.post("/serverside/api.php", params)
+                        .success(function (data) {
+                            if (data !== undefined) {
+                                var album = new PhotoAlbum();
+                                album.fromSource(data);
+                                albums.push(album);
+                                if (callback !== undefined && typeof callback === "function")
+                                    callback(album);
+                                return true;
+                            }
+                        });
+                }
+                return false;
             }
         }
     };
@@ -1181,7 +1297,9 @@ function ArticleController ($scope, $application, $http, $location, $routeParams
             $scope.newComment.articleId = $scope.article.id;
             $scope.newComment.userId = $application.getSessionUser().id;
             $application.comments.add($scope.newComment, function (comment) {
-                $log.log("done");
+                $scope.article.comments.push(comment);
+                $scope.inAddCommentMode = false;
+                $scope.newComment.content = "";
             });
         }
     };
@@ -2120,6 +2238,7 @@ function runFunction ($log, $rootScope, $application, $cookies) {
         if (window.initData.news !== null && window.initData.news !== undefined) {
             var length = window.initData.news.length;
             for (var i = 0; i < length; i++) {
+                $log.log(window.initData.news[i].comments);
 
                 var article = new Article();
                 article.fromSource(window.initData.news[i].article);
@@ -2139,6 +2258,24 @@ function runFunction ($log, $rootScope, $application, $cookies) {
             }
             $log.log($application.getNews());
         }
+
+        if (window.initData.albums !== null && window.initData.albums !== undefined) {
+            var length = window.initData.albums.length;
+            for (var i = 0; i < length; i++) {
+                var album = new PhotoAlbum();
+                album.fromSource(window.initData.albums[i].album);
+
+                var length2 = window.initData.albums[i].photos.length;
+                for (var x = 0; x < length2; x++) {
+                    var photo = new Photo();
+                    photo.fromSource(window.initData.albums[i].photos[x]);
+                    album.photos.push(photo);
+                }
+
+                $application.albums.getAll().push(album);
+            }
+            $log.log($application.albums.getAll());
+        }
     }
 
 
@@ -2146,5 +2283,71 @@ function runFunction ($log, $rootScope, $application, $cookies) {
         $application.setSessionUser(parseInt($cookies.user_id));
     }
 
+
+};
+
+
+
+function AlbumsController ($log, $scope, $application) {
+    $scope.app = $application;
+    $scope.newAlbum = new PhotoAlbum();
+    $scope.inAddMode = false;
+    $scope.app.activeMenu("#/albums");
+
+    $scope.cancelAddAlbum = function () {
+        $scope.inAddMode = false;
+        $scope.newAlbum.title = "";
+    };
+
+    $scope.add = function () {
+        $scope.newAlbum.userId = $application.getSessionUser().id;
+        if ($scope.newAlbum.validate() === 0) {
+            $application.albums.add($scope.newAlbum, function (album) {
+                $scope.newAlbum.title = "";
+                $scope.inAddMode = false;
+            });
+        }
+    };
+};
+
+
+
+
+
+function AlbumController ($scope, $log, $application, $http, $location, $routeParams) {
+    $scope.app = $application;
+    $scope.album = new PhotoAlbum();
+    $scope.app.activeMenu("#/albums");
+    $scope.uploaderData = {
+        albumId: 0,
+        userId: 0
+    };
+
+    if ($routeParams.albumId !== undefined && $application.albums.getAll().length !== 0) {
+        var length = $application.albums.getAll().length;
+        for (var i = 0; i < length; i++) {
+            if ($application.albums.getAll()[i].id === parseInt($routeParams.albumId))
+                $scope.album = $application.albums.getAll()[i];
+        }
+    }
+    if ($scope.album.id === 0)
+        $location.url("/albums");
+
+    $scope.gotoNews = function () {
+        $location.url("/albums");
+    };
+
+    $scope.onBeforeUploadPhoto = function () {
+        $scope.uploaderData.albumId = $scope.album.id;
+        $scope.uploaderData.userId = $application.getSessionUser().id;
+    };
+
+    $scope.onCompleteUploadPhoto = function (data) {
+        $log.log(data);
+
+        var photo = new Photo();
+        photo.fromSource(data);
+        $scope.album.photos.push(photo);
+    };
 
 };

@@ -71,16 +71,32 @@
             </row>
             <row><div ng-show="article.comments.length === 0">Комментарии отсутствуют</div></row>
 
-            <row>
-                <div class="comment" ng-repeat="comment in article.comments track by $index">
-                    <div><span class="left">{{ app.getUserById(comment.userId).fio }}</span>
-                        <span class="right">{{ comment.added.format("DD.MM.YYYY в HH:mm") }}</span>
+            <row ng-repeat="comment in article.comments track by $index">
+                <column cols="12">
+                    <row>
+                        <column cols="12">
+                            <span class="left">{{ app.getUserById(comment.userId).fio }}</span>
+                            <span class="right">{{ comment.added.format("DD.MM.YYYY в HH:mm") }}</span>
+                        </column>
+                    </row>
+                    <row>
+                        <column cols="12">
+                            {{ comment.content }}<hr>
+                        </column>
+                    </row>
+                    <!--
+                    <div class="comment" ng-repeat="comment in article.comments track by $index">
+                        <div class="width-12">
+                            <span class="left">{{ app.getUserById(comment.userId).fio }}</span>
+                            <span class="right">{{ comment.added.format("DD.MM.YYYY в HH:mm") }}</span>
+                        </div>
+                        <div class="width-12">
+                            {{ comment.content }}
+                        </div>
+                        <hr>
                     </div>
-                    <div>
-                        {{ comment.content }}
-                    </div>
-                    <hr>
-                </div>
+                    -->
+                </column>
             </row>
         </div>
 

@@ -68,6 +68,9 @@
             case "addComment":
                 addComment($postdata -> data);
                 break;
+            case "addAlbum":
+                addAlbum($postdata -> data);
+                break;
         }
     }
 
@@ -200,7 +203,7 @@
                 $article = new stdClass();
                 $article -> article = $row;
                 $article -> comments = array();
-                $articleId = $row["ID"];
+                $articleId = $row["id"];
 
 
                 $comments = mysql_query("SELECT * FROM comments WHERE ARTICLE_ID = $articleId", $link);
@@ -270,22 +273,6 @@
         }
     }
 
-
-
-    function getAlbums () {
-        global $link;
-        $result = array();
-
-        $query = mysql_query("SELECT * FROM albums", $link);
-        if (!$query)
-            return json_encode("error");
-        else {
-            while ($row = mysql_fetch_assoc($query)) {
-                array_push($result, $row);
-            }
-            return json_encode($result);
-        }
-    }
 
 
 
@@ -687,6 +674,61 @@
             } else {
                 $id = mysql_insert_id();
                 $query2 = mysql_query("SELECT * FROM comments WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                }
+            }
+        }
+    }
+
+
+    function getAlbums () {
+        global $link;
+        $result = array();
+
+        $query = mysql_query("SELECT * FROM albums", $link);
+        if (!$query) {
+            echo(json_encode("error"));
+            return false;
+        } else {
+            while ($row = mysql_fetch_assoc($query)) {
+                $album = new stdClass();
+                $album -> album = $row;
+                $album -> photos = array();
+                $albumId = $row["ID"];
+                $photos = mysql_query("SELECT * FROM photos WHERE album_id = $albumId", $link);
+                if (!$photos) {
+                    //echo(json_encode("error"));
+                    //return false;
+                } else {
+                    while ($photo = mysql_fetch_assoc($photos)) {
+                        array_push($album -> photos, $photo);
+                    }
+                }
+                array_push($result, $album);
+            }
+            return json_encode($result);
+            return true;
+        }
+    }
+
+
+    function addAlbum ($data) {
+        if ($data != null) {
+            $userId = $data -> userId;
+            $title = $data -> title;
+            $added = time();
+
+            $query = mysql_query("INSERT INTO albums (user_id, title, added) VALUES ($userId, '$title', $added)");
+            if (!$query) {
+                echo(json_encode("error"));
+                return false;
+            } else {
+                $id = mysql_insert_id();
+                $query2 = mysql_query("SELECT * FROM albums WHERE id = $id");
                 if (!$query2) {
                     echo(json_encode("error"));
                     return false;

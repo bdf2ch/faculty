@@ -11,7 +11,7 @@
 
 <row centered>
     <column cols="1"></column>
-    <column cols="7">
+    <column cols="8">
         <div class="article_" ng-repeat="article in app.getNews() | tags track by $index">
             <div class="row">
                 <h3><a ng-href="#/news/{{ article.id  }}">{{ article.title }}</a></h3>
@@ -26,13 +26,15 @@
                     <p class="lead">{{ article.preview }}</p>
                     <span class="left small">
                         <i>{{ article.timestamp.format("DD MMM YYYY в HH:mm") }}</i>
+                        <i ng-show="article.comments.length > 0">, комментариев: {{ article.comments.length }}</i>
                     </span>
                     <a ng-href="#/news/{{ article.id  }}" class="right">Читать полностью</a>
                 </column>
                 <column cols="12" ng-show="article.image === ''">
                     <p class="lead">{{ article.preview }}</p>
                     <span class="left small">
-                        <i>{{ article.timestamp.format("DD MMM YYYY в HH:mm") }}</i>
+                        <i>{{ article.timestamp.format("DD MMM YYYY в HH:mm") }},</i>
+                        <i ng-show="article.comments.length > 0">, комментариев: {{ article.comments.length }}</i>
                     </span>
                     <a ng-href="#/news/{{ article.id  }}" class="right">Читать полностью</a>
                 </column>
@@ -80,7 +82,7 @@
 
 
     </column>
-    <columns cols="3">
+    <columns cols="2">
         <div class="content-block width-12">
             <h5>Фильтр по тегам</h5>
             <a href class="tag" ng-class="{ selected: tag.isSelected === true }" ng-repeat="tag in app.getTags() track by $index" ng-click="app.selectTag(tag.title)">{{ tag.title }}</a>
