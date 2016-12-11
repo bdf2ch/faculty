@@ -740,4 +740,62 @@
     }
 
 
+
+    function OAuthUser ($network, $identity, $name, $surname) {
+        $net = "";
+        $idn = mysql_real_escape_string($identity);
+        switch ($network) {
+            case "vkontakte":
+                $net = "vkontakte_uid";
+                break;
+            case "odnoklassniki":
+                $net = "odnoklassniki_uid";
+                break;
+            case "mailru":
+                $net = "mailru_uid";
+                break;
+            case "facebook":
+                $net = "facebook_uid";
+                break;
+        }
+
+        $query = mysql_query("SELECT * FROM users WHERE ".$net." = '$idn'");
+        if (!$query) {
+            echo(json_encode(false));
+            return false;
+        }
+        if ($query && mysql_num_rows($query) == 0) {
+            //echo("no user found<br>");
+            $userQuery = mysql_query("INSERT INTO users (surname, name, fname, email, is_professor, password, speciality_id, $net) VALUES ('$surname', '$name', ' ', ' ', 0, ' ', 0, '$idn')");
+            if (!$userQuery) {
+                echo(json_encode(false));
+                return false;
+            } else {
+                //echo("user added<br>");
+                $userId = mysql_insert_id();
+                $user = mysql_query("SELECT * FROM users WHERE ID = $userId");
+                if (!$user) {
+                    echo(json_encode("error"));
+                    return false;
+                } else {
+                    $result = mysql_fetch_assoc($user);
+                    setcookie("user_id", $result["id"]);
+                    //echo(json_encode($result));
+                    return true;
+                }
+            }
+        } else {
+            $user = mysql_query("SELECT * FROM users WHERE ".$net." = '$idn'");
+            if (!$user) {
+                echo(json_encode("error"));
+                return false;
+            } else {
+                $result = mysql_fetch_assoc($user);
+                setcookie("user_id", $result["id"]);
+                //echo(json_encode($result));
+                return true;
+            }
+        }
+    }
+
 ?>

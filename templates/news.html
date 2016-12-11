@@ -87,6 +87,14 @@
             <h5>Фильтр по тегам</h5>
             <a href class="tag" ng-class="{ selected: tag.isSelected === true }" ng-repeat="tag in app.getTags() track by $index" ng-click="app.selectTag(tag.title)">{{ tag.title }}</a>
         </div>
+        <br>
+        <div class="content-block width-12">
+            <h5>Календарь</h5>
+            <div ng-show="app.events.getAll().length === 0" class="text-centered">События отсутствуют</div>
+            <div class="text-right">
+                <a href="#/new-event">Добавить событие</a>
+            </div>
+        </div>
     </columns>
     <column cols="1"></column>
 </row>

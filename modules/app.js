@@ -648,7 +648,47 @@ function Result (parameters) {
             this.errors["value"] = "Вы не выбрали оценку";
         return Object.keys(this.errors).length;
     };
-}
+};
+
+
+function UserEvent () {
+    this.id = 0;
+    this.userId = 0;
+    this.title = "";
+    this.participants = [];
+    this.date = 0;
+    this.errors = [];
+
+    this.fromSource = function (data) {
+        if (data !== undefined) {
+            for (var field in data) {
+                switch (field) {
+                    case "ID":
+                        this.id = parseInt(data[field]);
+                        break;
+                    case "USER_ID":
+                        this.userId = parseInt(data[field]);
+                        break;
+                    case "TITLE":
+                        this.title = data[field];
+                        break;
+                    case "PARTICIPANTS":
+                        if (data[field].indexOf !== -1) {
+                            var temp = data[field].split(";");
+                            var length = temp.length;
+                            for (var i = 0; i < length; i++) {
+                                this.participants.push(parseInt(temp[i]));
+                            }
+                        }
+                        break;
+                    case "TIMESTAMP":
+                        this.date = new moment.unix(parseInt(data[field]));
+                        break;
+                }
+            }
+        }
+    };
+};
 
 
 
@@ -740,6 +780,10 @@ angular
             .when("/photoalbum/:albumId", {
                 templateUrl: "templates/album.html",
                 controller: "AlbumController"
+            })
+            .when("/new-event", {
+                templateUrl: "templates/new-event.html",
+                controller: "NewEventController"
             })
             .otherwise({
                     redirectTo: "/"
@@ -857,6 +901,7 @@ function ApplicationFactory ($cookies, $location, $http) {
     var news = [];
     var tags = [];
     var albums = [];
+    var events = [];
     var currentUser = undefined;
     var sessionUser = undefined;
     var currentArticle = undefined;
@@ -1116,6 +1161,28 @@ function ApplicationFactory ($cookies, $location, $http) {
                                 return true;
                             }
                         });
+                }
+                return false;
+            }
+        },
+
+        events: {
+            getAll: function () {
+                return events;
+            },
+
+            getByParticipantId: function (participantId) {
+                if (participantId !== undefined) {
+                    var result = [];
+                    var length = events.length;
+                    for (var i = 0; i < length; i++) {
+                        var length2 = events[i].participants.length;
+                        for (var x = 0; x < length2; x++) {
+                            if (events[i].participants[x] === participantId)
+                                result.push(events[i].participants[x]);
+                        }
+                    }
+                    return result;
                 }
                 return false;
             }
@@ -2350,4 +2417,59 @@ function AlbumController ($scope, $log, $application, $http, $location, $routePa
         $scope.album.photos.push(photo);
     };
 
+};
+
+
+
+function NewEventController ($scope, $log, $application, $http, $location) {
+    $scope.app = $application;
+    $scope.newEvent = new UserEvent();
+    $scope.newUser = new User();
+    $scope.errors = [];
+    $scope.app.activeMenu("#/news");
+
+
+    $scope.addParticipant = function () {
+        var user = new User();
+        user.id = $scope.newUser.id;
+        $scope.newEvent.participants.push(user);
+        $scope.newUser.id = 0;
+    };
+
+    $scope.remove = function (id) {
+        $log.log("remove called");
+        if (id !== undefined) {
+            var length = $scope.newEvent.participants.length;
+            for (var i = 0; i < length; i++) {
+                if ($scope.newEvent.participants[i].id === id) {
+                    $log.log(id + " found");
+                    $scope.newEvent.participants.splice(i, 1);
+                    length = $scope.newEvent.participants.length;
+                }
+            }
+        }
+    };
+
+    $scope.gotoProfessors = function () {
+        $location.url("/professors");
+    };
+
+    $scope.validate = function () {
+        $scope.errors = [];
+
+        if ($scope)
+
+        if ($scope.newProfessor.validate() === 1) {
+            $http.post("serverside/api.php", { action: "addProfessor", data: { surname: $scope.newProfessor.surname, name: $scope.newProfessor.name, fname: $scope.newProfessor.fname, email: $scope.newProfessor.email, password: $scope.newProfessor.password} })
+                .success(function (data) {
+                    if (data !== undefined) {
+                        var user = new User();
+                        user.fromSource(data);
+                        $application.getUsers().push(user);
+                        $scope.newProfessor.cancel();
+                        $location.url("/professors");
+                    }
+                });
+        }
+    };
 };
