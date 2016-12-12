@@ -655,8 +655,11 @@ function UserEvent () {
     this.id = 0;
     this.userId = 0;
     this.title = "";
-    this.participants = [];
+    this.content = "";
+    this.participants = "";
+    this.users = [];
     this.date = 0;
+    this.added = 0;
     this.errors = [];
 
     this.fromSource = function (data) {
@@ -672,20 +675,33 @@ function UserEvent () {
                     case "TITLE":
                         this.title = data[field];
                         break;
+                    case "CONTENT":
+                        this.content = data[field];
+                        break;
                     case "PARTICIPANTS":
-                        if (data[field].indexOf !== -1) {
-                            var temp = data[field].split(";");
-                            var length = temp.length;
-                            for (var i = 0; i < length; i++) {
-                                this.participants.push(parseInt(temp[i]));
-                            }
-                        }
+                        this.participants = data[field];
                         break;
                     case "TIMESTAMP":
                         this.date = new moment.unix(parseInt(data[field]));
                         break;
+                    case "ADDED":
+                        this.added = new moment.unix(parseInt(data[field]));
+                        break;
                 }
             }
+        }
+    };
+
+    this.joinParticipants = function () {
+        if (this.users.length > 0) {
+            var result = "";
+            var length = this.users.length;
+            for (var i = 0; i < length; i++) {
+                result += this.users[i].id.toString();
+                result += i < length - 1 ? ";" : "";
+            }
+            console.log("joined = ", result);
+            return result;
         }
     };
 };
@@ -785,8 +801,12 @@ angular
                 templateUrl: "templates/new-event.html",
                 controller: "NewEventController"
             })
+            .when("/events/:eventId", {
+                templateUrl: "templates/event.html",
+                controller: "EventController"
+            })
             .otherwise({
-                    redirectTo: "/"
+                redirectTo: "/"
             })
     })
     .factory("$application", ApplicationFactory)
@@ -799,6 +819,7 @@ angular
     .filter("professors", ProfessorsFilter)
     .filter("professorId", ProfessorIdFilter)
     .filter("tags", tagsFilter)
+    .filter("participants", participantsFilter)
     .directive("uploader", ["$log", "$http", function ($log, $http) {
         return {
             restrict: "A",
@@ -1185,6 +1206,13 @@ function ApplicationFactory ($cookies, $location, $http) {
                     return result;
                 }
                 return false;
+            },
+
+            add: function (event) {
+                if (event !== undefined) {
+                    events.push(event);
+                    return true;
+                }
             }
         }
     };
@@ -1240,6 +1268,7 @@ function NewsController ($log, $scope, $application, $location, $http) {
     $scope.app = $application;
     $scope.inAddMode = false;
     $scope.app.activeMenu("#/news");
+    $scope.now = new moment();
 
 
     $scope.gotoNewArticle = function () {
@@ -1923,6 +1952,27 @@ function tagsFilter ($log, $application) {
 
 
 
+function participantsFilter ($log) {
+    return function (input, users) {
+        var result = [];
+        var length = input.length;
+        for (var i = 0; i < length; i++) {
+
+            var length2 = users.length;
+            var found = false;
+            for (var x = 0; x < length2; x++) {
+                if (users[x].id === input[i].id)
+                    found = true;
+            }
+            if (found === false)
+                result.push(input[i]);
+        }
+        return result;
+    };
+};
+
+
+
 function NewStudentController ($scope, $application, $http, $location) {
     $scope.app = $application;
     $scope.newUser = new User();
@@ -2261,6 +2311,8 @@ function runFunction ($log, $rootScope, $application, $cookies) {
     
     moment.locale("ru");
 
+    $log.info(window.initData);
+
     if (window.initData !== null && window.initData !== undefined) {
         if (window.initData.users !== null && window.initData.users !== undefined) {
             var length = window.initData.users.length;
@@ -2342,6 +2394,25 @@ function runFunction ($log, $rootScope, $application, $cookies) {
                 $application.albums.getAll().push(album);
             }
             $log.log($application.albums.getAll());
+        }
+
+        if (window.initData.events !== null && window.initData.events !== undefined) {
+            $log.log(window.initData.events);
+            var length = window.initData.events.length;
+            for (var i = 0; i < length; i++) {
+                var event = new UserEvent();
+                event.fromSource(window.initData.events[i]);
+
+                var participants = event.participants.split(";");
+
+                var length2 = participants.length;
+                for (var x = 0; x < length2; x++) {
+                    event.users.push($application.getUserById(parseInt(participants[x])));
+                }
+
+                $application.events.getAll().push(event);
+            }
+            $log.log("events", $application.events.getAll());
         }
     }
 
@@ -2426,50 +2497,121 @@ function NewEventController ($scope, $log, $application, $http, $location) {
     $scope.newEvent = new UserEvent();
     $scope.newUser = new User();
     $scope.errors = [];
+    $scope.date = "";
     $scope.app.activeMenu("#/news");
 
 
     $scope.addParticipant = function () {
-        var user = new User();
-        user.id = $scope.newUser.id;
-        $scope.newEvent.participants.push(user);
-        $scope.newUser.id = 0;
+        /*
+        var length = $application.getUsers().length;
+        for (var i = 0; i < length; i++) {
+            if ($application.getUsers()[i].id === $scope.newUser.id) {
+                $scope.newEvent.users.push($application.getUsers()[i]);
+                $scope.newUser.id = 0;
+                return true;
+            }
+        }
+        */
+        if ($scope.newUser.id !== 0) {
+            $scope.newEvent.users.push($application.getUserById($scope.newUser.id));
+            $scope.newUser.id = 0;
+            return true;
+        }
     };
 
+
+
     $scope.remove = function (id) {
-        $log.log("remove called");
         if (id !== undefined) {
-            var length = $scope.newEvent.participants.length;
+            var length = $scope.newEvent.users.length;
             for (var i = 0; i < length; i++) {
-                if ($scope.newEvent.participants[i].id === id) {
-                    $log.log(id + " found");
-                    $scope.newEvent.participants.splice(i, 1);
-                    length = $scope.newEvent.participants.length;
+                if ($scope.newEvent.users[i].id === id) {
+                    $scope.newEvent.users.splice(i, 1);
+                    length = $scope.newEvent.users.length;
                 }
             }
         }
     };
 
-    $scope.gotoProfessors = function () {
-        $location.url("/professors");
-    };
+
 
     $scope.validate = function () {
         $scope.errors = [];
 
-        if ($scope)
 
-        if ($scope.newProfessor.validate() === 1) {
-            $http.post("serverside/api.php", { action: "addProfessor", data: { surname: $scope.newProfessor.surname, name: $scope.newProfessor.name, fname: $scope.newProfessor.fname, email: $scope.newProfessor.email, password: $scope.newProfessor.password} })
+        if ($scope.newEvent.title === "")
+            $scope.errors["title"] = "Вы не указали наименование";
+
+        if ($scope.newEvent.content === "")
+            $scope.errors["content"] = "Вы не указали содержание";
+
+        if ($scope.newEvent.users.length === 0)
+            $scope.errors["participants"] = "Вы не выбрали ни одного участника";
+
+        if ($scope.date === "") {
+            $scope.errors["date"] = "Вы не указали дату события";
+        } else {
+            var reg = /^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/;
+            if ($scope.date.match(reg)) {
+                if (new moment().unix() > moment($scope.date, "DD.MM.YYYY").unix())
+                    $scope.errors["date"] = "Дата события не может быть раньше текущей даты";
+                else
+                    $scope.newEvent.date = moment($scope.date, "DD.MM.YYYY").unix();
+            } else
+                $scope.errors["date"] = "Дата события указана некорректно";
+        }
+
+        $log.log("errors = ", $scope.errors.length);
+        if ($scope.errors["title"] === undefined && $scope.newEvent.content !== undefined && $scope.errors["date"] === undefined && $scope.errors["participants"] === undefined) {
+            var params = {
+                action: "addEvent",
+                data: {
+                    userId: $application.getSessionUser().id,
+                    title: $scope.newEvent.title,
+                    content: $scope.newEvent.content,
+                    date: $scope.newEvent.date,
+                    participants: $scope.newEvent.joinParticipants()
+                }
+            };
+            $http.post("/serverside/api.php", params)
                 .success(function (data) {
                     if (data !== undefined) {
-                        var user = new User();
-                        user.fromSource(data);
-                        $application.getUsers().push(user);
-                        $scope.newProfessor.cancel();
-                        $location.url("/professors");
+                        var ev = new UserEvent();
+                        ev.fromSource(data);
+                        var users = ev.participants.split(";");
+                        var length = users.length;
+                        for (var i = 0; i < length; i++) {
+                            ev.users.push($application.getUserById(parseInt(users[i])));
+                        }
+                        $application.events.add(ev);
+                        $location.url("/");
+                        return true;
                     }
                 });
         }
     };
+};
+
+
+function EventController ($scope, $log, $application, $http, $location, $routeParams) {
+    $scope.app = $application;
+    $scope.event = new UserEvent();
+    $scope.app.activeMenu("#/news");
+
+
+    if ($routeParams.eventId !== undefined && $application.events.getAll().length !== 0) {
+        var length = $application.events.getAll().length;
+        for (var i = 0; i < length; i++) {
+            if ($application.events.getAll()[i].id === parseInt($routeParams.eventId))
+                $scope.event = $application.events.getAll()[i];
+        }
+    }
+    if ($scope.event.id === 0)
+        $location.url("/news");
+
+    $scope.gotoNews = function () {
+        $location.url("/news");
+    };
+
+
 };

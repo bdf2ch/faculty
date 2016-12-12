@@ -197,3 +197,9 @@ body {
 .photo:last-of-type {
   margin-right: 0px;
 }
+.event a {
+  text-decoration: none;
+}
+.event a.outdated {
+  color: lightgrey;
+}

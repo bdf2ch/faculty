@@ -6,34 +6,43 @@
 <row centered>
     <column cols="6">
         <div class="width-12" style="background: white; padding: 20px;">
-            <form method="post" action="" class="forms" ng-submit="newProfessor.validate()">
+            <form method="post" class="forms">
                 <section>
                     <label>
                         Наименование
-                        <span class="error right" ng-show="newEvent.errors['title'] !== undefined">{{ newEvent.errors["title"] }}</span>
+                        <span class="error right" ng-show="errors['title'] !== undefined">{{ errors["title"] }}</span>
                     </label>
                     <input type="text" name="surname" ng-model="newEvent.title"/>
                 </section>
                 <section>
                     <label>
-                        Дата
-                        <span class="error right" ng-show="newProfessor.errors['name'] !== undefined">{{ newProfessor.errors["name"] }}</span>
+                        Дата (в формате ДД.ММ.ГГГГ)
+                        <span class="error right" ng-show="errors['date'] !== undefined">{{ errors["date"] }}</span>
                     </label>
-                    <input type="text" name="name" ng-model="newProfessor.name"/>
+                    <input type="text" name="name" ng-model="date"/>
+                </section>
+                <section>
+                    <label>
+                        Содержание
+                        <span class="error right" ng-show="errors['content'] !== undefined">{{ errors["content"] }}</span>
+                    </label>
+                    <input type="text" name="content" ng-model="newEvent.content"/>
                 </section>
                 <section>
                     <label>
                         Участники
                         <span class="error right" ng-show="errors['participants'] !== undefined">{{ errors["participants"] }}</span>
                     </label>
-                    <select name="" id="" class="width-9 left" ng-options="user.id as user.fio for user in app.getUsers()" ng-model="newUser.id"></select>
+                    <select name="" id="" class="width-9 left" ng-options="user.id as user.fio for user in app.getUsers() | participants:newEvent.users" ng-model="newUser.id"></select>
                     <button type="primary" class="width-3" ng-click="addParticipant()">Добавить</button><br><br>
                     <table class="table table-condensed table-stripped">
                         <tbody>
-                        <tr ng-show="newEvent.participants.length === 0">Участники не выбраны</tr>
-                        <tr ng-repeat="p in newEvent.participants track by $index">
-                            <td class="width-10">{{ app.getUserById(p.id).fio }}</td>
-                            <td class="width-2"><button type="primary" ng-click="remove(p.id)">Удалить</button></td>
+                        <tr ng-show="newEvent.users.length === 0">
+                            <td>Участники не выбраны</td>
+                        </tr>
+                        <tr ng-repeat="user in newEvent.users track by $index">
+                            <td class="width-10">{{ app.getUserById(user.id).fio }}</td>
+                            <td class="width-2"><button type="primary" ng-click="remove(user.id)">Удалить</button></td>
                         </tr>
                         </tbody>
                     </table>

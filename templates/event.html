@@ -1,0 +1,67 @@
+<row centered>
+    <column cols="1"></column>
+    <column cols="10">
+        <div class="article_">
+            <row>
+                <column cols="12">
+                    <h2>
+                        {{ event.added.format("DD MMM YYYY в HH:mm") + ": " + event.title }}
+                    </h2>
+                    <span class="left small">
+                        Событие добавил(а) <b>{{ app.getUserById(event.userId).fio + ", "  + event.added.format("DD.MM.YYYY в HH:mm")}}</b>
+                    </span>
+                </column>
+            </row>
+
+            <row>
+                <column cols="12">{{ event.content }}</column>
+            </row>
+
+            <row>
+                <column cols="12" ng-init="user = app.getUserById(article.userId)">
+                    <table class="table-stripped">
+                        <caption>Участники</caption>
+                        <tbody>
+                        <tr ng-repeat="user in event.users track by $index">
+                            <td>{{ app.getUserById(user.id).fio }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </column>
+
+
+            </row>
+
+
+            <row ng-repeat="comment in article.comments track by $index">
+                <column cols="12">
+                    <row>
+                        <column cols="12">
+                            <span class="left">{{ app.getUserById(comment.userId).fio }}</span>
+                            <span class="right">{{ comment.added.format("DD.MM.YYYY в HH:mm") }}</span>
+                        </column>
+                    </row>
+                    <row>
+                        <column cols="12">
+                            {{ comment.content }}<hr>
+                        </column>
+                    </row>
+                    <!--
+                    <div class="comment" ng-repeat="comment in article.comments track by $index">
+                        <div class="width-12">
+                            <span class="left">{{ app.getUserById(comment.userId).fio }}</span>
+                            <span class="right">{{ comment.added.format("DD.MM.YYYY в HH:mm") }}</span>
+                        </div>
+                        <div class="width-12">
+                            {{ comment.content }}
+                        </div>
+                        <hr>
+                    </div>
+                    -->
+                </column>
+            </row>
+        </div>
+
+    </column>
+    <column cols="1"></column>
+</row>

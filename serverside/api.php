@@ -71,6 +71,9 @@
             case "addAlbum":
                 addAlbum($postdata -> data);
                 break;
+            case "addEvent":
+                addEvent($postdata -> data);
+                break;
         }
     }
 
@@ -729,6 +732,53 @@
             } else {
                 $id = mysql_insert_id();
                 $query2 = mysql_query("SELECT * FROM albums WHERE id = $id");
+                if (!$query2) {
+                    echo(json_encode("error"));
+                    return false;
+                } else {
+                    echo(json_encode(mysql_fetch_assoc($query2)));
+                }
+            }
+        }
+    }
+
+
+
+    function getEvents () {
+        global $link;
+        $result = array();
+
+        $query = mysql_query("SELECT * FROM events", $link);
+        if (!$query) {
+            echo(json_encode("error"));
+            return false;
+        } else {
+            while ($row = mysql_fetch_assoc($query)) {
+                array_push($result, $row);
+            }
+            return json_encode($result);
+            return true;
+        }
+    }
+
+
+
+    function addEvent ($data) {
+        if ($data != null) {
+            $userId = $data -> userId;
+            $title = $data -> title;
+            $content = $data -> content;
+            $date = $data -> date;
+            $participants = $data -> participants;
+            $added = time();
+
+            $query = mysql_query("INSERT INTO events (user_id, title, content, timestamp, participants, added) VALUES ($userId, '$title', '$content', $date, '$participants', $added)");
+            if (!$query) {
+                echo(json_encode("error"));
+                return false;
+            } else {
+                $id = mysql_insert_id();
+                $query2 = mysql_query("SELECT * FROM events WHERE id = $id");
                 if (!$query2) {
                     echo(json_encode("error"));
                     return false;

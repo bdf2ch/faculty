@@ -40,6 +40,7 @@
     $template -> assign("DISCIPLINES", getDisciplines());
     $template -> assign("RESULTS", getResults());
     $template -> assign("SPECIALITIES", getSpecialities());
+    $template -> assign("EVENTS", getEvents());
 
     $template -> parse("main");
     $template -> out("main");
